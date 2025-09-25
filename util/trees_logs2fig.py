@@ -1,4 +1,5 @@
 import re
+import os
 import argparse
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -34,6 +35,10 @@ all_trees = []
 tree_data = []
 type_line = ''
 iter=0
+
+os.makedirs(f'{out_dir}/txt',exist_ok=True)
+os.makedirs(f'{out_dir}/imgs',exist_ok=True)
+
 for l in lines:
     
     insere = False
@@ -69,7 +74,7 @@ for l in lines:
 
 for tdata in all_trees:
     #print(tdata['nome'])
-    out_name = f'{out_dir}/{out_prefix}_{tdata['nome']}.txt'
+    out_name = f'{out_dir}/txt/{out_prefix}_{tdata['nome']}.txt'
     f=open(out_name,'w')
     for d in tdata['data']:
         f.write(d+'\n')
@@ -98,6 +103,6 @@ for tdata in all_trees:
     node_colors = ["#"+3*(hex(g.nodes[node]['gval']).split('x')[-1].rjust(2).replace(' ','0')) for node in g.nodes()]
 
     nx.draw(g, with_labels=True, pos=pdot, node_size=nsize, font_size=fsize, font_color='red', node_color=node_colors)
-    out_name = out_name = f'{out_dir}/{out_prefix}_{tdata['nome']}.{ext}'
+    out_name = out_name = f'{out_dir}/imgs/{out_prefix}_{tdata['nome']}.{ext}'
     plt.savefig(out_name)
     plt.clf()

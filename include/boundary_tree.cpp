@@ -557,16 +557,6 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             if(addx && addy){
                 thisx->ptr_node->attribute = b;
                 thisy->ptr_node->attribute = b;
-            // }else if(addx){
-            //     thisy->ptr_node->attribute += carryx;
-            //     carryy = Tattr_NULL;
-            //     carryyidx = NULL_IDX;
-            //     thisx->ptr_node->attribute = thisy->ptr_node->attribute;
-            // }else if(addy){
-            //     thisx->ptr_node->attribute += carryy;
-            //     carryx = Tattr_NULL;
-            //     carryxidx = NULL_IDX;
-            //     thisy->ptr_node->attribute = thisx->ptr_node->attribute;
             }else{
                 carryx = carryy = Tattr_NULL;
                 carryxidx = carryyidx = NULL_IDX;;
@@ -575,7 +565,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             if(addx || addy){
                 if(verbose) std::cout << "      antes - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
                 if(y->ptr_node->global_idx != x->ptr_node->global_idx){
-                    if(x->boundary_parent == NO_BOUNDARY_PARENT){
+                    if(x->boundary_parent == NO_BOUNDARY_PARENT && y->boundary_parent != NO_BOUNDARY_PARENT){
                         thisx->border_lr = yidx;
                     }else{
                         thisy->border_lr = xidx;
@@ -603,22 +593,22 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
 
             xpar=x->bound_tree_ptr->get_bnode_levelroot(x->boundary_parent);
-            if(!xpar || xpar->ptr_node->gval < y->ptr_node->gval){ 
+            if(!xpar || xpar->ptr_node->gval <= y->ptr_node->gval){ 
                 thisx->border_lr = y->ptr_node->global_idx;
                 
             }
-            bool update_parent = true;
-            auto yold_treex = x->bound_tree_ptr->get_border_node(yold->ptr_node->global_idx);
-            if(yold_treex != NULL && yold_treex->ptr_node->parent == xold->ptr_node->idx){
-                update_parent = false;
-            }
-            auto xold_treey = x->bound_tree_ptr->get_border_node(xold->ptr_node->global_idx);
-            if(xold_treey != NULL && xold_treey->ptr_node->parent == yold->ptr_node->idx){
-                update_parent = false;
-            }
-            if(update_parent){
-                thisyold->border_lr = x->ptr_node->global_idx;
-            }
+            // bool update_parent = true;
+            // auto yold_treex = x->bound_tree_ptr->get_border_node(yold->ptr_node->global_idx);
+            // if(yold_treex != NULL && yold_treex->ptr_node->parent == xold->ptr_node->idx){
+            //     update_parent = false;
+            // }
+            // auto xold_treey = x->bound_tree_ptr->get_border_node(xold->ptr_node->global_idx);
+            // if(xold_treey != NULL && xold_treey->ptr_node->parent == yold->ptr_node->idx){
+            //     update_parent = false;
+            // }
+            // if(update_parent){
+            //     thisyold->border_lr = x->ptr_node->global_idx;
+            // }
             xold=x;
             x=xpar;
         }else if(x->ptr_node->gval < y->ptr_node->gval){ // >>>>>>>>>>>>>>>>>>>>> need to test this case <<<<<<<<<<<<<<<<<<<<<<<<<
@@ -637,24 +627,24 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
         
             ypar=y->bound_tree_ptr->get_bnode_levelroot(y->boundary_parent);
-            if(!ypar || ypar->ptr_node->gval < x->ptr_node->gval) { 
+            if(!ypar || ypar->ptr_node->gval <= x->ptr_node->gval) { 
                 thisy->border_lr = x->ptr_node->global_idx;
                 
             }
 
-            bool update_parent = true;
-            auto yold_treex = x->bound_tree_ptr->get_border_node(yold->ptr_node->global_idx);
-            if(yold_treex != NULL && yold_treex->ptr_node->parent == xold->ptr_node->idx){
-                update_parent = false;
-            }
-            auto xold_treey = x->bound_tree_ptr->get_border_node(xold->ptr_node->global_idx);
-            if(xold_treey != NULL && xold_treey->ptr_node->parent == yold->ptr_node->idx){
-                update_parent = false;
-            }
-            if(update_parent){
-                thisxold->border_lr = y->ptr_node->global_idx;
+            // bool update_parent = true;
+            // auto yold_treex = x->bound_tree_ptr->get_border_node(yold->ptr_node->global_idx);
+            // if(yold_treex != NULL && yold_treex->ptr_node->parent == xold->ptr_node->idx){
+            //     update_parent = false;
+            // }
+            // auto xold_treey = x->bound_tree_ptr->get_border_node(xold->ptr_node->global_idx);
+            // if(xold_treey != NULL && xold_treey->ptr_node->parent == yold->ptr_node->idx){
+            //     update_parent = false;
+            // }
+            // if(update_parent){
+            //     thisxold->border_lr = y->ptr_node->global_idx;
                 
-            }
+            // }
             yold=y;
             y=ypar;    
         }        

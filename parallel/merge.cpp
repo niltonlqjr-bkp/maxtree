@@ -17,7 +17,7 @@
 
 
 using namespace vips;
-
+bool print_only_trees;
 bool verbose;
 /* 
 void print_pq(std::priority_queue<maxtree_node*, std::vector<maxtree_node*> ,cmp_maxtree_nodes> pq){
@@ -57,6 +57,7 @@ int main(int argc, char *argv[]){
         Reading configuration file
     */
     verbose=false;
+    print_only_trees=false;
     Tattribute lambda=2;
 
     in = new vips::VImage(
@@ -69,6 +70,11 @@ int main(int argc, char *argv[]){
     if (configs->find("verbose") != configs->end()){
         if(configs->at("verbose") == "true"){
             verbose=true;
+        }
+    }
+    if(configs->find("print_only_trees") != configs->end()){
+        if(configs->at("print_only_trees") == "true"){
+            print_only_trees = true;
         }
     }
 
@@ -334,15 +340,15 @@ int main(int argc, char *argv[]){
                 
                 std::cout << "merge boundary tree: " << i << " " << j << " with " << i << " " << j+grid_col_inc/2 << "\n";
 
-                // if(verbose){
-                    // std::cout << "---------------------before merge---------------------\n";
+                if(print_only_trees || verbose){
+                    std::cout << "---------------------before merge---------------------\n";
                     std::cout << "BASE BOUNDARY TREE: " << base_bt->grid_i << ", " << base_bt->grid_j <<  "\n";
                     std::cout << base_bt->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
                     std::cout << "=================================================================\n";
                     std::cout << "TO_MERGE BOUNDARY TREE:" << to_merge->grid_i << ", " << to_merge->grid_j <<  "\n";
                     std::cout << to_merge->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
                     std::cout << "=================================================================\n";
-                // }
+                }
                 merged = base_bt->merge(to_merge,MERGE_VERTICAL,pixel_connection);
 
                 // base_bt->update_tree(merged);
@@ -378,7 +384,7 @@ int main(int argc, char *argv[]){
                     std::cout << t->to_string(PARENT,colored,5) << "\n\n";
                 }  */
 
-                // if(verbose){
+                if(print_only_trees||verbose){
                     std::cout << "---------------------after update and compress---------------------\n";
                     // std::cout << "BASE BOUNDARY TREE:" << base_bt->grid_i << ", " << base_bt->grid_j <<  "\n";
                     // std::cout << base_bt->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
@@ -389,14 +395,14 @@ int main(int argc, char *argv[]){
                     std::cout << "MERGED BOUNDARY TREE:" << merged->grid_i << ", " << merged->grid_j <<  "\n";
                     std::cout << merged->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
                     std::cout << "_________________________________________________________________\n";
-                // }
+                }
                     
                 /* std::cout << "<><><><><><><><><> AFTER MERGE: "<< i << " " << j <<" <><><><><><><><><> \n";
                 base_bt->print_tree();
                  */
                 
                 ntrees--;
-                if(verbose){
+                if(print_only_trees || verbose){
                     std::cout << "Merge tiles: (" << base_bt->grid_i << ", " << base_bt->grid_j << ") <===> "
                               << "(" << to_merge->grid_i << ", " << to_merge->grid_j << ")\n";
                     std::cout << "ntrees:" << ntrees << " glines:"  << glines << " gcol:" <<  gcolumns <<"\n";
@@ -421,14 +427,14 @@ int main(int argc, char *argv[]){
             boundary_tree *to_merge = aux_tile_table[i+grid_lin_inc/2][0];
             boundary_tree *del_bt = base_bt;
             
-            // if(verbose){
+            if(print_only_trees || verbose){
                 std::cout << "BASE BOUNDARY TREE:" << base_bt->grid_i << ", " << base_bt->grid_j <<  "\n";
                 std::cout << base_bt->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
                 std::cout << "=================================================================\n";
                 std::cout << "TO_MERGE BOUNDARY TREE:" << to_merge->grid_i << ", " << to_merge->grid_j <<  "\n";
                 std::cout << to_merge->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
                 std::cout << "=================================================================\n";
-            // }
+            }
             merged=base_bt->merge(to_merge,MERGE_HORIZONTAL,pixel_connection);
             // if(verbose){
                 // std::cout << "---------------------before update and compress---------------------\n";
@@ -458,12 +464,12 @@ int main(int argc, char *argv[]){
             //std::cout << t->to_string(GLOBAL_IDX,colored,8,2) << "\n\n";
 
 
-            // if(verbose){
+            if(print_only_trees || verbose){
 
                 std::cout << "MERGED BOUNDARY TREE:" << merged->grid_i << ", " << merged->grid_j <<  "\n";
                 std::cout << merged->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
                 std::cout << "_________________________________________________________________\n";
-            // }
+            }
 
             /* 
             std::cout << "<><><><><><><><><> AFTER MERGE: "<< i << " " << j <<" <><><><><><><><><> \n";
@@ -485,7 +491,7 @@ int main(int argc, char *argv[]){
             std::cout << "+++++++++++++++++++++++++++++++++++\n";
         }
     }
-    // if(verbose){
+    if(verbose){
         std::cout << "Final Boundary Tree:\n";
         std::cout << "-------------NODE INFO--------------\n";
         std::cout << merged->lroot_to_string(BOUNDARY_ALL_FIELDS, "\n") << "\n";
@@ -495,7 +501,7 @@ int main(int argc, char *argv[]){
         // std::cout << merged->lroot_to_string(BOUNDARY_GVAL) << "\n";
         std::cout << "======================================================\n";
         std::cout << "_________________________________________________________________\n";
-    // }
+    }
     for(int i=0; i < glines; i++){
         for(int j=0;j<gcolumns; j++){
             t = tiles.at(i).at(j);
