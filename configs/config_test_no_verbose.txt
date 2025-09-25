@@ -1,0 +1,22 @@
+# comments will be ignored, and every comment must start the line with # (no blank chars before)
+# blank lines also be ignored
+
+# main server 
+server=10.1.1.2
+# number of threads for the process 
+threads=2
+# grid lines
+glines=3
+# grid columns
+gcolumns=4
+
+# print some information(true/false)
+verbose=false
+# print information with colors (true/false)
+colored = false
+
+#atribute value to filter
+lambda=120
+
+#output prefix
+output = saidas/out_2L2C

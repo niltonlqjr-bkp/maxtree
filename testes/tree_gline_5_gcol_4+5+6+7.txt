@@ -1,0 +1,8 @@
+0x6293fcd2b510( idx:244	, bound_parent:242	, border_lr:-1, 	 gval:250	, attribute:7)
+0x6293fcd2b470( idx:299	, bound_parent:-1	, border_lr:-1, 	 gval:50	, attribute:16)
+0x6293fcd2b3f0( idx:280	, bound_parent:279	, border_lr:-1, 	 gval:150	, attribute:16)
+0x6293fcd2b370( idx:279	, bound_parent:276	, border_lr:-1, 	 gval:150	, attribute:16)
+0x6293fcd2b270( idx:277	, bound_parent:279	, border_lr:-1, 	 gval:250	, attribute:2)
+0x6293fcd2b170( idx:298	, bound_parent:299	, border_lr:-1, 	 gval:50	, attribute:16)
+0x6293fcd2b070( idx:276	, bound_parent:298	, border_lr:-1, 	 gval:100	, attribute:16)
+0x6293fcd2af70( idx:242	, bound_parent:279	, border_lr:-1, 	 gval:250	, attribute:7)

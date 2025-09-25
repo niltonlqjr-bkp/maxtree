@@ -1,0 +1,8 @@
+**/*.o
+**/saidas/*
+**/**/saidas/*
+outros/*
+output/*
+util/*.txt
+util/*.pdf
+util/*.png
