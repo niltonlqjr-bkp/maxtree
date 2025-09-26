@@ -708,6 +708,7 @@ void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum m
     std::vector<uint64_t> *v_t1, *v_t2, *new_border;
     enum borders first_border, second_border, third_border, fourth_border;
     uint64_t ini ;
+    boundary_node *bn;
     // boundary_node *node, *node_tree, *new_node;
 
     if(d == MERGE_VERTICAL){
@@ -729,7 +730,9 @@ void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum m
         // new_node = new boundary_node(v_t1->at(i));
         // new_node->bound_tree_ptr = this;
         // new_border->push_back(new_node);
-        new_border->push_back(v_t1->at(i));
+        bn = this->get_bnode_levelroot(v_t1->at(i));
+        new_border->push_back(bn->ptr_node->global_idx);
+        // new_border->push_back(v_t1->at(i));
     }
     this->change_border(new_border, first_border);
 
@@ -742,7 +745,9 @@ void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum m
         // new_node = new boundary_node(v_t2->at(i));
         // new_node->bound_tree_ptr = this;
         // new_border->push_back(new_node);
-        new_border->push_back(v_t2->at(i));
+        // new_border->push_back(v_t2->at(i));
+        bn = this->get_bnode_levelroot(v_t2->at(i));
+        new_border->push_back(bn->ptr_node->global_idx);
     }
     this->change_border(new_border, second_border);
     
@@ -777,7 +782,9 @@ void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum m
         // new_node = new boundary_node(node);
         // new_node->bound_tree_ptr = this;
         // new_border->push_back(node);
-        new_border->push_back(v_t1->at(i));
+        // new_border->push_back(v_t1->at(i));
+        bn = this->get_bnode_levelroot(v_t1->at(i));
+        new_border->push_back(bn->ptr_node->global_idx);
     }
 
     ini = 0 + t2->tile_borders->at(first_border) + t1->tile_borders->at(second_border);
@@ -785,7 +792,9 @@ void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum m
         // new_node = new boundary_node(v_t2->at(i));
         // new_node->bound_tree_ptr = this;
         // new_border->push_back(new_node);
-        new_border->push_back(v_t2->at(i));
+        // new_border->push_back(v_t2->at(i));
+        bn = this->get_bnode_levelroot(v_t2->at(i));
+        new_border->push_back(bn->ptr_node->global_idx);
     }
     this->change_border(new_border, third_border);
     
@@ -819,7 +828,9 @@ void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum m
         // new_node = new boundary_node(node);
         // new_node->bound_tree_ptr = this;
         // new_border->push_back(node);
-        new_border->push_back(v_t1->at(i));
+        // new_border->push_back(v_t1->at(i));
+        bn = this->get_bnode_levelroot(v_t1->at(i));
+        new_border->push_back(bn->ptr_node->global_idx);
     }
 
     ini = 0 + t2->tile_borders->at(first_border) + t1->tile_borders->at(second_border);
@@ -828,7 +839,9 @@ void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum m
         // new_node = new boundary_node(v_t2->at(i));
         // new_node->bound_tree_ptr = this;
         // new_border->push_back(new_node);
-        new_border->push_back(v_t2->at(i));
+        // new_border->push_back(v_t2->at(i));
+        bn = this->get_bnode_levelroot(v_t2->at(i));
+        new_border->push_back(bn->ptr_node->global_idx);
     }
     this->change_border(new_border, fourth_border);
     
@@ -1000,8 +1013,8 @@ boundary_tree *boundary_tree::merge(boundary_tree *t, enum merge_directions d, u
         // ret_tree->merge_branches_gaz(x, y, accumulatedx);
 
     }
-    ret_tree->combine_borders(this, t, d);
     ret_tree->combine_lroot_trees(this,merge_tree);
+    ret_tree->combine_borders(this, t, d);
 
    /*  if(verbose){
         std::cout << "____________________________________________________________\n";

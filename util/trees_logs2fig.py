@@ -16,13 +16,14 @@ parser.add_argument('--output-dir', '-d', dest='out_dir', default='.', help='out
 parser.add_argument('--output-prefix', '-o', dest='output', default='fig', help='output file prefix')
 parser.add_argument('--output-ext', '-e', dest='ext', default='pdf', help='output file extension')
 parser.add_argument('--show-values', '-s', dest='show_values', action='store_true', help='')
-parser.add_argument('--node-size', '-n', dest='node_size', default=300, type=int, help='size of nodes in final figure')
+parser.add_argument('--node-size', '-n', dest='node_size', default=150, type=int, help='size of nodes in final figure')
+parser.add_argument('--font-size', '-f', dest='font_size', default=8, type=int, help='size of nodes in final figure')
 args = parser.parse_args()
 
 
 fn = args.file
 nsize = args.node_size
-fsize = 5 + nsize//100
+fsize = args.font_size
 ext= args.ext
 out_dir = args.out_dir
 out_prefix = args.output
@@ -74,7 +75,7 @@ for l in lines:
 
 for tdata in all_trees:
     #print(tdata['nome'])
-    out_name = f'{out_dir}/txt/{out_prefix}_{tdata['nome']}.txt'
+    out_name = f"{out_dir}/txt/{out_prefix}_{tdata['nome']}.txt"
     f=open(out_name,'w')
     for d in tdata['data']:
         f.write(d+'\n')
@@ -103,6 +104,6 @@ for tdata in all_trees:
     node_colors = ["#"+3*(hex(g.nodes[node]['gval']).split('x')[-1].rjust(2).replace(' ','0')) for node in g.nodes()]
 
     nx.draw(g, with_labels=True, pos=pdot, node_size=nsize, font_size=fsize, font_color='red', node_color=node_colors)
-    out_name = out_name = f'{out_dir}/imgs/{out_prefix}_{tdata['nome']}.{ext}'
+    out_name = out_name = f"{out_dir}/imgs/{out_prefix}_{tdata['nome']}.{ext}"
     plt.savefig(out_name)
     plt.clf()
