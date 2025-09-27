@@ -45,7 +45,7 @@ for l in lines:
     insere = False
     info = re.search(r'(BASE BOUNDARY TREE:.*\d+.*\d+.*|TO_MERGE BOUNDARY TREE:.*\d+.*\d+.*|MERGED BOUNDARY TREE:.*\d+.*\d+.*|Final Boundary Tree:.*)',l)
     if info != None:
-        data_name = l.replace(':','-').replace(' ','_')
+        data_name = l.replace('BOUNDARY TREE','BT').replace(':','-').replace(' ','_')
         type_line = 'header'
         #print('---->',data_name,'<----')
     else:

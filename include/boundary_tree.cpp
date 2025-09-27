@@ -500,6 +500,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                                    std::unordered_map<uint64_t, bool> &accy){
     boundary_node *z, *thisx, *thisy, *xpar, *ypar, *xold, *yold, *thisxold, *thisyold;
     bool addx, addy;
+    std::unordered_map<int64_t, int64_t> levelroot_pairs;  
     Tattribute a, b, carryx, carryy;
     a = b = carryx = carryy = Tattr_NULL;
     uint64_t xidx, yidx, carryyidx, carryxidx;
@@ -564,11 +565,25 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             
             if(addx || addy){
                 if(verbose) std::cout << "      antes - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
-                if(y->ptr_node->global_idx != x->ptr_node->global_idx){
-                    if(x->boundary_parent == NO_BOUNDARY_PARENT && y->boundary_parent != NO_BOUNDARY_PARENT){
-                        thisx->border_lr = yidx;
-                    }else{
-                        thisy->border_lr = xidx;
+                if(yidx != xidx){
+                    if(levelroot_pairs.find(xidx) == levelroot_pairs.end() && levelroot_pairs.find(yidx) == levelroot_pairs.end()){
+                     // the levelroots were not connected yet, so it is needed to create a border levelroot and connect them
+                    
+                        if(x->boundary_parent == NO_BOUNDARY_PARENT && y->boundary_parent != NO_BOUNDARY_PARENT){
+                            levelroot_pairs[yidx] = yidx;
+                            levelroot_pairs[xidx] = yidxz;
+                            thisx->border_lr = yidx;
+                        }else{
+                            levelroot_pairs[xidx] = xidx;
+                            levelroot_pairs[yidx] = xidx;
+                            thisy->border_lr = xidx;
+                        }        
+                    }else if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){
+                        levelroot_pairs[xidx] = levelroot_pairs[yidx];
+                        thisx->border_lr = levelroot_pairs[yidx];
+                    }else if (levelroot_pairs.find(yidx) == levelroot_pairs.end()){
+                        levelroot_pairs[yidx] = levelroot_pairs[xidx];
+                        thisy->border_lr = levelroot_pairs[xidx];
                     }
                 }
                 if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
@@ -594,7 +609,12 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
 
             xpar=x->bound_tree_ptr->get_bnode_levelroot(x->boundary_parent);
             if(!xpar || xpar->ptr_node->gval <= y->ptr_node->gval){ 
-                thisx->border_lr = y->ptr_node->global_idx;
+                // thisx->border_lr = y->ptr_node->global_idx;
+                if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
+                    levelroot_pairs[yidx] = yidx;
+                }
+                levelroot_pairs[xidx] = levelroot_pairs[yidx];
+                thisx->border_lr = levelroot_pairs[yidx];
                 
             }
             // bool update_parent = true;
@@ -628,7 +648,12 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
         
             ypar=y->bound_tree_ptr->get_bnode_levelroot(y->boundary_parent);
             if(!ypar || ypar->ptr_node->gval <= x->ptr_node->gval) { 
-                thisy->border_lr = x->ptr_node->global_idx;
+                // thisy->border_lr = x->ptr_node->global_idx;
+                if(levelroot_pairs.find(xidx) == levelroot_pairs.end()){
+                    levelroot_pairs[xidx] = xidx;
+                }
+                levelroot_pairs[yidx] = levelroot_pairs[xidx];
+                thisy->border_lr = levelroot_pairs[xidx];
                 
             }
 

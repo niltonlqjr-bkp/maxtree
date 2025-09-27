@@ -357,7 +357,7 @@ boundary_tree *maxtree::get_boundary_tree(uint8_t connectivity){
         for(j=0; j<this->w; j++){
             to_merge = this->at_pos(1, j);    
             neighbour = this->at_pos(0, j);
-            if(neighbour->gval < to_merge->gval){
+            if(neighbour->gval > to_merge->gval){
                 to_merge=neighbour;
             }
             to_merge_lr = this->get_levelroot(to_merge);
@@ -372,7 +372,7 @@ boundary_tree *maxtree::get_boundary_tree(uint8_t connectivity){
         for(i=0; i<this->h; i++){
             to_merge = this->at_pos(i, this->w-2);
             neighbour = this->at_pos(i, this->w-1);
-            if(neighbour->gval < to_merge->gval){
+            if(neighbour->gval > to_merge->gval){
                 to_merge=neighbour;
             }
             
@@ -388,7 +388,7 @@ boundary_tree *maxtree::get_boundary_tree(uint8_t connectivity){
         for(j=0; j < this->w; j++){
             to_merge = this->at_pos(this->h-2, j);
             neighbour = this->at_pos(this->h-1, j);
-            if(neighbour->gval < to_merge->gval){
+            if(neighbour->gval > to_merge->gval){
                 to_merge = neighbour;
             }
             to_merge_lr = this->get_levelroot(to_merge);
@@ -404,7 +404,7 @@ boundary_tree *maxtree::get_boundary_tree(uint8_t connectivity){
         for(i=0; i < this->h; i++){
             to_merge = this->at_pos(i, 1);
             neighbour = this->at_pos(i, 0);
-            if(neighbour->gval < to_merge->gval){
+            if(neighbour->gval > to_merge->gval){
                 to_merge=neighbour;
             }
             to_merge_lr = this->get_levelroot(to_merge);
