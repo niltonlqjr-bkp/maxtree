@@ -515,6 +515,8 @@ int main(int argc, char *argv[]){
                 std::cout << t->to_string(GVAL,colored,8,2);
                 std::cout << "__________________LABEL________________\n";
                 std::cout << t->to_string(LABEL,colored,8,2);
+                std::cout << "_______________LEVELROOT________________\n";
+                std::cout << t->to_string(LEVELROOT,colored,5);
                 std::cout << "________________ATTRIBUTE________________\n";
                 std::cout << t->to_string(ATTRIBUTE,colored,5);
             }

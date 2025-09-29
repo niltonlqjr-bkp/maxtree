@@ -5,11 +5,11 @@
 #include <unordered_map>
 #include <sysexits.h>
 
-#include "maxtree_node.hpp"
-#include "utils.hpp"
-
 #ifndef __BOUNDARY_TREE__
 #define __BOUNDARY_TREE__
+
+#include "maxtree_node.hpp"
+#include "utils.hpp"
 
 #define NO_BORDER_LEVELROOT -1
 #define NO_BOUNDARY_PARENT -1

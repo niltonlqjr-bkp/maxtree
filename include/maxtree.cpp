@@ -416,6 +416,21 @@ boundary_tree *maxtree::get_boundary_tree(uint8_t connectivity){
     return bound_tree;
 }
 
+void maxtree::update_node_attr(maxtree_node *n, boundary_tree *bt){
+    auto glr = bt->get_bnode_levelroot(n->global_idx); // global levelroot
+    if(glr != NULL){
+        n->compute_attribute(glr->ptr_node->attribute);
+        n->global_parent = glr->ptr_node->global_idx;
+    }else{
+        auto llr = this->get_levelroot(n->parent);
+        if(!llr->attr_final){
+            this->update_node_attr(llr, bt);
+        }
+        n->compute_attribute(llr->attribute);
+        n->global_parent = llr->global_idx;
+    }
+}
+
 void maxtree::update_from_boundary_tree(boundary_tree *bt){
     // boundary_node *n;
     // for(auto boundary_pair: *(bt->boundary_tree_lroot)){
@@ -435,15 +450,10 @@ void maxtree::update_from_boundary_tree(boundary_tree *bt){
     // std::cout << "update_from_boundary_tree\n";
     for(auto n: *(this->data)){
         auto llr = this->get_levelroot(n); // local levelroot
-        auto glr = bt->get_bnode_levelroot(llr->global_idx); // global levelroot
-        if(glr != NULL){
-            n->attribute = glr->ptr_node->attribute;
-            n->global_parent = glr->ptr_node->global_idx;
+        if(!llr->attr_final){
+            update_node_attr(llr, bt);
         }
-        else{
-            n->attribute = llr->attribute;
-            n->global_parent = llr->global_idx;
-        }
+        n->compute_attribute(llr->attribute);
     }
     // std::cout << "fim update_from_boundary_tree\n";
 }

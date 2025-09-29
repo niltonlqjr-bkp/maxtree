@@ -565,27 +565,41 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             
             if(addx || addy){
                 if(verbose) std::cout << "      antes - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
-                if(yidx != xidx){
-                    if(levelroot_pairs.find(xidx) == levelroot_pairs.end() && levelroot_pairs.find(yidx) == levelroot_pairs.end()){
-                     // the levelroots were not connected yet, so it is needed to create a border levelroot and connect them
-                    
-                        if(x->boundary_parent == NO_BOUNDARY_PARENT && y->boundary_parent != NO_BOUNDARY_PARENT){
-                            levelroot_pairs[yidx] = yidx;
-                            levelroot_pairs[xidx] = yidxz;
+                
+                if(levelroot_pairs.find(xidx) == levelroot_pairs.end() && levelroot_pairs.find(yidx) == levelroot_pairs.end()){
+                    // the levelroots were not connected yet, so it is needed to create a border levelroot and connect them
+                
+                    if(x->boundary_parent == NO_BOUNDARY_PARENT && y->boundary_parent != NO_BOUNDARY_PARENT){
+                        levelroot_pairs[yidx] = yidx;
+                        levelroot_pairs[xidx] = yidx;
+                        if(yidx != xidx){
                             thisx->border_lr = yidx;
-                        }else{
-                            levelroot_pairs[xidx] = xidx;
-                            levelroot_pairs[yidx] = xidx;
+                        }
+                    }else{
+                        levelroot_pairs[xidx] = xidx;
+                        levelroot_pairs[yidx] = xidx;
+                        if(yidx != xidx){
                             thisy->border_lr = xidx;
-                        }        
-                    }else if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){
-                        levelroot_pairs[xidx] = levelroot_pairs[yidx];
+                        }
+                    }        
+                }else if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){
+                    levelroot_pairs[xidx] = levelroot_pairs[yidx];
+                    if(yidx != xidx){
                         thisx->border_lr = levelroot_pairs[yidx];
-                    }else if (levelroot_pairs.find(yidx) == levelroot_pairs.end()){
-                        levelroot_pairs[yidx] = levelroot_pairs[xidx];
+                    }
+                    if(ypar == NULL && xpar != NULL){
+                        thisy->border_lr = xpar->ptr_node->global_idx;
+                    }
+                }else if (levelroot_pairs.find(yidx) == levelroot_pairs.end()){
+                    levelroot_pairs[yidx] = levelroot_pairs[xidx];
+                    if(yidx != xidx){
                         thisy->border_lr = levelroot_pairs[xidx];
                     }
+                    if(xpar == NULL && ypar != NULL){
+                        thisx->border_lr = ypar->ptr_node->global_idx;
+                    }
                 }
+                
                 if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
             }
             xold=x;

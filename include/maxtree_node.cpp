@@ -10,7 +10,7 @@ maxtree_node::maxtree_node(Tpixel_value g, uint64_t i, uint64_t global_idx, Tatt
     this->labeled = false;
     this->parent = NO_PARENT;
     this->global_idx = global_idx;
-    this->visited=false;
+    this->attr_final=false;
     this->global_parent = global_parent;
 }
 
@@ -29,6 +29,11 @@ maxtree_node::maxtree_node(Tpixel_value g, uint64_t i, uint64_t global_idx, Tatt
 void maxtree_node::set_label(Tpixel_value l){
     this->label = l;
     this->labeled = true;
+}
+
+void maxtree_node::compute_attribute(Tattribute a){
+    this->attribute = a;
+    this->attr_final = true;
 }
 
 bool maxtree_node::operator>(const maxtree_node &r){

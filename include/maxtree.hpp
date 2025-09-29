@@ -6,12 +6,12 @@
 #include <cinttypes>
 #include <sysexits.h>
 
+#ifndef __MAXTREE_HPP__
+#define __MAXTREE_HPP__
+
 #include "utils.hpp"
 #include "maxtree_node.hpp"
 #include "boundary_tree.hpp"
-
-#ifndef __MAXTREE_HPP__
-#define __MAXTREE_HPP__
 
 #define INQUEUE -2
 
@@ -58,7 +58,7 @@ class maxtree{
 
         int flood(int lambda, maxtree_node *r, std::vector<std::deque<maxtree_node*>> *hqueue, 
             std::vector<maxtree_node *> *levelroot, std::vector<maxtree_node*> &S);
-
+        void update_node_attr(maxtree_node *n, boundary_tree *bt);
         
     public:
         
