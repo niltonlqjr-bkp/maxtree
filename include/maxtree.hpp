@@ -76,9 +76,12 @@ class maxtree{
         std::tuple<uint32_t,uint32_t> lin_col(uint64_t index);
         maxtree_node *at_pos(int64_t h, int64_t w);
         maxtree_node *at_pos(int64_t index);
+        
 
         maxtree_node *get_parent(uint64_t node_idx);
 
+        void set_pixel(maxtree_node *p, int64_t idx);
+        // void set_pixel(maxtree_node &p, int64_t idx);
         void fill_from_VImage(vips::VImage &img, uint32_t global_nlines=0, uint32_t global_ncols=0);
         void fill_from_VRegion(vips::VRegion &reg_in, uint32_t base_h, uint32_t base_w,
                                uint32_t l_tiles, uint32_t c_tiles);
@@ -86,6 +89,8 @@ class maxtree{
 
         void insert_component(std::vector<int> component, int64_t parent, Tpixel_value threshold, uint64_t id=-1);
         void insert_component(component c, Tpixel_value threshold);
+        
+
         
         std::vector<component> components_at(Tpixel_value threshold);
         std::vector<Tpixel_value> all_thresholds();

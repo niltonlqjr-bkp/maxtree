@@ -47,6 +47,7 @@ maxtree::maxtree(std::vector<maxtree_node*> *data, uint32_t h, uint32_t w, uint3
     this->tile_borders = new std::vector<bool>(4, false);
 }
 
+
 maxtree::maxtree(std::vector <bool> borders, uint32_t h, uint32_t w, uint32_t grid_i, uint32_t grid_j){
     this->h = h;
     this->w = w;
@@ -87,6 +88,32 @@ maxtree_node *maxtree::at_pos(int64_t index){
     }
     return NULL;
 }
+
+void maxtree::set_pixel(maxtree_node *p, int64_t idx){
+    if(idx < this->data->size()){
+        this->data->at(idx) = p;
+    }
+}
+// void maxtree::set_pixel(maxtree_node &p, int64_t idx){
+//     maxtree_node *new_pix;
+//     if(idx < this->data->size()){
+//         if(this->data->at(idx) == NULL){
+//             new_pix = new maxtree_node(p.gval, idx, p.global_idx, p.attribute, p.global_parent);
+//         }else{
+//             new_pix = this->data->at(idx);
+//             new_pix->gval = p.gval;
+//             new_pix->idx = idx;
+//             new_pix->global_idx = p.global_idx;
+//             new_pix->attribute = p.attribute;
+//             new_pix->global_parent = p.global_parent;
+//         }
+//         new_pix->attr_final = p.attr_final;
+//         new_pix->label = p.label;
+//         new_pix->labeled = p.labeled;
+//         new_pix->parent = p.parent;
+//     }
+
+// }
 
 maxtree_node *maxtree::get_parent(uint64_t node_idx){
     if(node_idx < 0){
@@ -451,12 +478,13 @@ void maxtree::update_from_boundary_tree(boundary_tree *bt){
     for(auto n: *(this->data)){
         auto llr = this->get_levelroot(n); // local levelroot
         if(!llr->attr_final){
-            update_node_attr(llr, bt);
+            this->update_node_attr(llr, bt);
         }
         n->compute_attribute(llr->attribute);
     }
     // std::cout << "fim update_from_boundary_tree\n";
 }
+
 
 
 void maxtree::filter(Tattribute lambda){
@@ -502,6 +530,8 @@ void maxtree::filter(Tattribute lambda){
         first_not_labeled++;
     }
 }
+
+
  
 void maxtree::filter(Tattribute lambda, boundary_tree *bt){
     std::vector<maxtree_node *> llr_stack;

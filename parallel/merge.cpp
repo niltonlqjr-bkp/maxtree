@@ -502,6 +502,8 @@ int main(int argc, char *argv[]){
         std::cout << "======================================================\n";
         std::cout << "_________________________________________________________________\n";
     }
+    maxtree *final_image = new maxtree(h, w, 0, 0);
+    final_image->get_data()->resize(h*w);
     for(int i=0; i < glines; i++){
         for(int j=0;j<gcolumns; j++){
             t = tiles.at(i).at(j);
@@ -520,9 +522,23 @@ int main(int argc, char *argv[]){
                 std::cout << "________________ATTRIBUTE________________\n";
                 std::cout << t->to_string(ATTRIBUTE,colored,5);
             }
+
+            for(int n = 0; n < t->get_size(); n++){
+                maxtree_node *pix = t->at_pos(n);
+                final_image->set_pixel(pix, pix->global_idx);
+            }
         }
     }
+    std::cout << "final image size:(" << final_image->h << ", " << final_image->w << ")\n";
+    std::cout << "final attribute tree:\n";
+    std::cout << final_image->to_string(ATTRIBUTE,colored, 5);
+    
+    std::cout << "real image:\n";
+    std::cout << final_image->to_string(GVAL,colored, 5,0);
 
+    std::cout << "labels:\n";
+    std::cout << final_image->to_string(LABEL,colored, 5,0);
+    
 
     //as boundary trees tem alturas e tamanhos distintos, logo é possível estimar o custo de um merge
 

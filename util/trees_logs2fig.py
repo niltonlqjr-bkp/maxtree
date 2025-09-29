@@ -73,13 +73,15 @@ for l in lines:
         tree_data = []
         iter+=1
 
+root = -1
+
 for tdata in all_trees:
     #print(tdata['nome'])
     out_name = f"{out_dir}/txt/{out_prefix}_{tdata['nome']}.txt"
     f=open(out_name,'w')
     for d in tdata['data']:
         f.write(d+'\n')
-        print(d)
+        #print(d)
     f.close()
 
     g = nx.DiGraph()
@@ -89,6 +91,8 @@ for tdata in all_trees:
         gval = get_field(ld, "gval:", int)
         attribute = get_field(ld, "attribute:", int, sep = ')')
         parent = get_field(ld, "bound_parent:", int)
+        if(parent == -1):
+            root = idx
         insert=True
         g.add_node(idx, gval=gval, attr=attribute, par = parent)
 
@@ -101,6 +105,14 @@ for tdata in all_trees:
 
     pdot=nx.drawing.nx_pydot.pydot_layout(g, prog='dot')
 
+    spacing = (len(g.nodes())*(nsize//100))//10+1
+    
+    plt.figure(figsize=(spacing,spacing))
+
+    
+    for k in pdot:
+        pdot[k] = (pdot[k][0], pdot[k][1]*spacing)
+    
     node_colors = ["#"+3*(hex(g.nodes[node]['gval']).split('x')[-1].rjust(2).replace(' ','0')) for node in g.nodes()]
 
     nx.draw(g, with_labels=True, pos=pdot, node_size=nsize, font_size=fsize, font_color='red', node_color=node_colors)
