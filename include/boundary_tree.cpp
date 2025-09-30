@@ -1196,6 +1196,13 @@ void boundary_tree::compress_path(){
             //delete n;
         }
     }
+    for(auto node: *(this->boundary_tree_lroot)){
+        n = node.second;
+        auto lr = this->get_bnode_levelroot(n->ptr_node->global_idx);
+        if(lr->ptr_node->global_idx != n->ptr_node->global_idx){
+            n->boundary_parent = lr->ptr_node->global_idx;
+        }
+    }
 }
 
 

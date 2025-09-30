@@ -15,7 +15,7 @@ parser.add_argument('file', help = 'filename')
 parser.add_argument('--output-dir', '-d', dest='out_dir', default='.', help='output directory')
 parser.add_argument('--output-prefix', '-o', dest='output', default='fig', help='output file prefix')
 parser.add_argument('--output-ext', '-e', dest='ext', default='pdf', help='output file extension')
-parser.add_argument('--show-values', '-s', dest='show_values', action='store_true', help='')
+parser.add_argument('--show-values', '-s', dest='scale', type=int, default=5 , help='constant of spacing between nodes')
 parser.add_argument('--node-size', '-n', dest='node_size', default=150, type=int, help='size of nodes in final figure')
 parser.add_argument('--font-size', '-f', dest='font_size', default=8, type=int, help='size of nodes in final figure')
 args = parser.parse_args()
@@ -27,6 +27,8 @@ fsize = args.font_size
 ext= args.ext
 out_dir = args.out_dir
 out_prefix = args.output
+space_scale = args.scale
+
 with open(fn) as f:
     texto = f.read()
 
@@ -105,13 +107,13 @@ for tdata in all_trees:
 
     pdot=nx.drawing.nx_pydot.pydot_layout(g, prog='dot')
 
-    spacing = (len(g.nodes())*(nsize//100))//10+1
-    
+    spacing = (len(g.nodes())*(nsize//100))//(int(25/space_scale))+1
+    print(tdata['nome'],spacing)    
     plt.figure(figsize=(spacing,spacing))
 
     
     for k in pdot:
-        pdot[k] = (pdot[k][0], pdot[k][1]*spacing)
+        pdot[k] = (pdot[k][0]*spacing, pdot[k][1])
     
     node_colors = ["#"+3*(hex(g.nodes[node]['gval']).split('x')[-1].rjust(2).replace(' ','0')) for node in g.nodes()]
 
