@@ -622,13 +622,14 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
 
             xpar=x->bound_tree_ptr->get_bnode_levelroot(x->boundary_parent);
-            if(!xpar || xpar->ptr_node->gval <= y->ptr_node->gval){ 
+            if(!xpar || xpar->ptr_node->gval < y->ptr_node->gval){ 
                 // thisx->border_lr = y->ptr_node->global_idx;
-                if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
-                    levelroot_pairs[yidx] = yidx;
-                }
-                levelroot_pairs[xidx] = levelroot_pairs[yidx];
-                thisx->border_lr = levelroot_pairs[yidx];
+                // if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
+                //     levelroot_pairs[yidx] = yidx;
+                // }
+                // levelroot_pairs[xidx] = levelroot_pairs[yidx];
+                thisyold->border_lr = xidx;
+                thisx->border_lr = yidx;
                 
             }
             // bool update_parent = true;
@@ -661,13 +662,14 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
         
             ypar=y->bound_tree_ptr->get_bnode_levelroot(y->boundary_parent);
-            if(!ypar || ypar->ptr_node->gval <= x->ptr_node->gval) { 
+            if(!ypar || ypar->ptr_node->gval < x->ptr_node->gval) { 
                 // thisy->border_lr = x->ptr_node->global_idx;
-                if(levelroot_pairs.find(xidx) == levelroot_pairs.end()){
-                    levelroot_pairs[xidx] = xidx;
-                }
-                levelroot_pairs[yidx] = levelroot_pairs[xidx];
-                thisy->border_lr = levelroot_pairs[xidx];
+                // if(levelroot_pairs.find(xidx) == levelroot_pairs.end()){
+                //     levelroot_pairs[xidx] = xidx;
+                // }
+                // levelroot_pairs[yidx] = levelroot_pairs[xidx];
+                thisxold->border_lr = yidx;
+                thisy->border_lr = xidx;
                 
             }
 
