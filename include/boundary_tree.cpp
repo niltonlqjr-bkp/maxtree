@@ -620,7 +620,14 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 std::cout << "   case 2\n";
                 std::cout << "      x " << x->to_string() << " > y "<< y->to_string() <<" gval\n";
             }
-            thisyold = this->get_border_node(levelroot_pairs[yold->ptr_node->global_idx]);
+            
+            uint64_t yoldidx = yold->ptr_node->global_idx;
+            if(levelroot_pairs.find(yoldidx) != levelroot_pairs.end() ){
+                thisyold = this->get_border_node(levelroot_pairs[yoldidx]);
+            }else{
+                thisyold = this->get_border_node(yoldidx);
+            }
+
             if(accx.find(xidx) == accx.end() || !accx[xidx]){
                 carryx = x->ptr_node->attribute;
                 carryxidx = xidx;
@@ -632,6 +639,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
 
             xpar=x->bound_tree_ptr->get_bnode_levelroot(x->boundary_parent);
             // thisyold->border_lr = xidx;
+            
             thisyold->boundary_parent = xidx;
             if(!xpar || xpar->ptr_node->gval < y->ptr_node->gval){ 
                 thisx->boundary_parent = yidx; 
@@ -645,7 +653,14 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 std::cout << "   case 3\n";
                 std::cout << "      x " << x->to_string() << " < y "<< y->to_string() <<" gval\n";
             }
-            thisxold = this->get_border_node(levelroot_pairs[xold->ptr_node->global_idx]);
+            
+            uint64_t xoldidx = xold->ptr_node->global_idx;
+            if(levelroot_pairs.find(xoldidx) != levelroot_pairs.end()){
+                thisxold = this->get_border_node(levelroot_pairs[xoldidx]);
+            }else{
+                thisxold = this->get_border_node(xoldidx);
+            }
+
             if(accy.find(yidx) == accy.end() || !accy[yidx]){
                 carryy = y->ptr_node->attribute;
                 carryyidx = yidx;
@@ -1167,26 +1182,26 @@ void boundary_tree::update_tree(boundary_tree *merged){
 
 void boundary_tree::compress_path(){
     boundary_node *n;
-    for(auto node: *(this->boundary_tree_lroot)){
-        n = node.second;
-        //check if n has the border_lr, so, it isn't a levelroot of the merge process 
-        if(n->border_lr != NO_BORDER_LEVELROOT){
-            // when the node isn't the levelroot of merge, we need to find the levelroot of this merge and
-            // set it as the parent of n.
+    // for(auto node: *(this->boundary_tree_lroot)){
+    //     n = node.second;
+    //     //check if n has the border_lr, so, it isn't a levelroot of the merge process 
+    //     if(n->border_lr != NO_BORDER_LEVELROOT){
+    //         // when the node isn't the levelroot of merge, we need to find the levelroot of this merge and
+    //         // set it as the parent of n.
             
-            //get levelroot of node that is border_lr of this node
-            auto new_bound_par = this->get_border_node(n->border_lr); 
-            //if the p
-            while(new_bound_par && new_bound_par->border_lr != NO_BORDER_LEVELROOT){
-                new_bound_par = this->get_border_node(new_bound_par->border_lr);
-            }
-            n->boundary_parent = new_bound_par != NULL ? new_bound_par->ptr_node->global_idx : NO_BOUNDARY_PARENT;
+    //         //get levelroot of node that is border_lr of this node
+    //         auto new_bound_par = this->get_border_node(n->border_lr); 
+    //         //if the p
+    //         while(new_bound_par && new_bound_par->border_lr != NO_BORDER_LEVELROOT){
+    //             new_bound_par = this->get_border_node(new_bound_par->border_lr);
+    //         }
+    //         n->boundary_parent = new_bound_par != NULL ? new_bound_par->ptr_node->global_idx : NO_BOUNDARY_PARENT;
             
-            n->border_lr = NO_BORDER_LEVELROOT;
-            //n->in_lroot_tree = false;
-            //delete n;
-        }
-    }
+    //         n->border_lr = NO_BORDER_LEVELROOT;
+    //         //n->in_lroot_tree = false;
+    //         //delete n;
+    //     }
+    // }
     for(auto node: *(this->boundary_tree_lroot)){
         n = node.second;
         auto lr = this->get_bnode_levelroot(n->ptr_node->global_idx);

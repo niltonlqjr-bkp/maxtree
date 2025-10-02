@@ -541,37 +541,41 @@ void maxtree::filter(Tattribute lambda, boundary_tree *bt){
     
     for(auto node: *(this->data)){
         llr = this->get_levelroot(node);
+        if(llr->attribute >= lambda){
+            node->set_label(llr->gval); //verify if node can set its output value
+        }else{
+            //if node attribute is lower than lambda, i need to search the local node that 
+            llr = this->get_levelroot(node->parent);
+            while(llr!=NULL && llr->attribute < lambda){
+                llr_stack.push_back(llr);
+                llr = this->get_levelroot(llr->parent);
+            }
+            if(llr == NULL){
+                llr = llr_stack.back();
+                glr = bt->get_bnode_levelroot(llr->global_idx);
+                while(glr!=NULL && glr->ptr_node->attribute < lambda){
+                    glr_stack.push_back(glr);
+                    glr = bt->get_bnode_levelroot(glr->ptr_node->global_idx);
+                }
+                if(glr!=NULL){
+                    label_lr = glr;
+                }else{
+                    label_lr = glr_stack.back();
+                }
+                
+            }
+            // if(llr->attribute >= lambda){
+                label_lr = llr;
+                llr->set_label(llr->gval);
+                while(!llr_stack.empty()){
+                    llr = llr_stack.back();
+                    llr->set_label(label_lr->gval);
+                    llr_stack.pop_back();
+                }
+            // }
+
+        }
         
-        while(llr!=NULL && !llr->labeled && llr->attribute < lambda){
-            llr_stack.push_back(llr);
-            llr = this->get_levelroot(llr->parent);
-        }
-        if(llr != NULL){
-            llr_stack.push_back(llr);
-        }
-        if(llr == NULL){
-            llr = llr_stack.back();
-            glr = bt->get_bnode_levelroot(llr->global_parent);
-            glr_stack.push_back(glr);
-            while(!glr->ptr_node->labeled && glr->ptr_node->attribute < lambda){
-                glr = bt->get_bnode_levelroot(glr->boundary_parent);
-                glr_stack.push_back(glr);
-            }
-            label_lr = glr->ptr_node;
-            while(!glr_stack.empty()){
-                glr = glr_stack.back();
-                glr->ptr_node->set_label(label_lr->label);
-                glr_stack.pop_back();
-            }
-        }else if(llr->labeled || llr->attribute >= lambda){
-            label_lr = llr;
-            label_lr->set_label(llr->gval);
-        }
-        while(!llr_stack.empty()){
-            llr = llr_stack.back();
-            llr->set_label(label_lr->label);
-            llr_stack.pop_back();
-        }
     }
 }
 
