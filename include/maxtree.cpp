@@ -542,40 +542,45 @@ void maxtree::filter(Tattribute lambda, boundary_tree *bt){
     for(auto node: *(this->data)){
         llr = this->get_levelroot(node);
         if(llr->attribute >= lambda){
-            node->set_label(llr->gval); //verify if node can set its output value
+            label_lr = llr;
         }else{
-            //if node attribute is lower than lambda, i need to search the local node that 
-            llr = this->get_levelroot(node->parent);
+            //if levelroot node attribute is lower than lambda, i need to search the local node that 
             while(llr!=NULL && llr->attribute < lambda){
                 llr_stack.push_back(llr);
                 llr = this->get_levelroot(llr->parent);
             }
             if(llr == NULL){
                 llr = llr_stack.back();
+                llr_stack.pop_back();
+                
                 glr = bt->get_bnode_levelroot(llr->global_idx);
                 while(glr!=NULL && glr->ptr_node->attribute < lambda){
                     glr_stack.push_back(glr);
-                    glr = bt->get_bnode_levelroot(glr->ptr_node->global_idx);
+                    glr = bt->get_bnode_levelroot(glr->boundary_parent);
                 }
                 if(glr!=NULL){
-                    label_lr = glr;
+                    label_lr = glr->ptr_node;
                 }else{
-                    label_lr = glr_stack.back();
+                    label_lr = glr_stack.back()->ptr_node;
+                    glr_stack.pop_back();
+                }
+                while(!glr_stack.empty()){
+                    glr = glr_stack.back();
+                    glr->ptr_node->set_label(label_lr->gval);
+                    glr_stack.pop_back();
                 }
                 
-            }
-            // if(llr->attribute >= lambda){
+            }else if(llr->attribute >= lambda){
                 label_lr = llr;
-                llr->set_label(llr->gval);
-                while(!llr_stack.empty()){
-                    llr = llr_stack.back();
-                    llr->set_label(label_lr->gval);
-                    llr_stack.pop_back();
-                }
-            // }
-
+            }
+            llr->set_label(label_lr->gval);
+            while(!llr_stack.empty()){
+                llr = llr_stack.back();
+                llr->set_label(label_lr->gval);
+                llr_stack.pop_back();
+            }
         }
-        
+        node->set_label(label_lr->gval);
     }
 }
 
@@ -638,7 +643,7 @@ void maxtree::fill_from_VRegion(vips::VRegion &reg_in, uint32_t base_h, uint32_t
         }
     }
 } 
-//this code is to "divide" strategy
+//this code is to "divide" strategy that performed pooly (very worst than sequential)
 
 /* 
 void maxtree::insert_component(component c, Tpixel_value gval){
