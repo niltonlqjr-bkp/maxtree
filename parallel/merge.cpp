@@ -427,6 +427,8 @@ int main(int argc, char *argv[]){
             boundary_tree *to_merge = aux_tile_table[i+grid_lin_inc/2][0];
             boundary_tree *del_bt = base_bt;
             
+            std::cout << "merge boundary tree: " << i << " " << 0 << " with " << i+grid_lin_inc/2 << " " << 0 << "\n";
+
             if(print_only_trees || verbose){
                 std::cout << "BASE BOUNDARY TREE:" << base_bt->grid_i << ", " << base_bt->grid_j <<  "\n";
                 std::cout << base_bt->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";

@@ -497,10 +497,11 @@ bool boundary_tree::search_cicle(int64_t s){
 /* ver o merge das linhas do grid 4 e 5 na divisão 8x8*/
 void boundary_tree::merge_branches(boundary_node *x, boundary_node *y, 
                                    std::unordered_map<uint64_t, bool> &accx, 
-                                   std::unordered_map<uint64_t, bool> &accy){
+                                   std::unordered_map<uint64_t, bool> &accy,
+                                   std::unordered_map<int64_t, int64_t> &levelroot_pairs){
     boundary_node *z, *thisx, *thisy, *xpar, *ypar, *xold, *yold, *thisxold, *thisyold;
     bool addx, addy;
-    std::unordered_map<int64_t, int64_t> levelroot_pairs;  
+    // std::unordered_map<int64_t, int64_t> levelroot_pairs;  
     Tattribute a, b, carryx, carryy;
     a = b = carryx = carryy = Tattr_NULL;
     uint64_t xidx, yidx, carryyidx, carryxidx;
@@ -518,9 +519,9 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
     while(y != NULL && x != NULL){
         xidx = x->ptr_node->global_idx;
         yidx = y->ptr_node->global_idx;
-        if(accx[xidx] && accy[yidx]){
-            return;
-        }
+        // if(accx[xidx] && accy[yidx]){
+        //     return;
+        // }
         // this->add_lroot_tree(x,false,true);
         // this->add_lroot_tree(y,false,true);
         auto insert_x = this->insert_bnode_lroot_tree(x,true);
@@ -572,7 +573,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 if(levelroot_pairs.find(xidx) == levelroot_pairs.end() && levelroot_pairs.find(yidx) == levelroot_pairs.end()){
                     // the levelroots were not connected yet, so it is needed to create a border levelroot and connect them
                 
-                    if(x->boundary_parent == NO_BOUNDARY_PARENT && y->boundary_parent != NO_BOUNDARY_PARENT){
+                    if(xpar == NULL && ypar != NULL){
                         levelroot_pairs[yidx] = yidx;
                         levelroot_pairs[xidx] = yidx;
                         if(yidx != xidx){
@@ -595,6 +596,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                     }
                     if(ypar == NULL && xpar != NULL){
                         // thisy->border_lr = xpar->ptr_node->global_idx;
+                        //auto xparidx = xpar->ptr_node->global_idx;
                         thisy->boundary_parent = xpar->ptr_node->global_idx;
                     }
                 }else if (levelroot_pairs.find(yidx) == levelroot_pairs.end()){
@@ -939,6 +941,7 @@ boundary_tree *boundary_tree::merge(boundary_tree *t, enum merge_directions d, u
     std::vector< uint64_t > *v_this, *v_t, *aux_border, *v_ret;
     boundary_tree *ret_tree, *merge_tree;
     std::unordered_map<uint64_t, bool> accumulatedx, accumulatedy;
+    std::unordered_map<int64_t, int64_t> levelroot_pairs;
     std::vector<uint64_t> swap_nodes;
     boundary_node *e_parent;
     /*given that the levelroots will be visited a lot of times, it is needed to sum only once,
@@ -1055,7 +1058,7 @@ boundary_tree *boundary_tree::merge(boundary_tree *t, enum merge_directions d, u
 
         boundary_node *x = this->get_bnode_levelroot(v_this->at(i));
         boundary_node *y = t->get_bnode_levelroot(v_t->at(i));
-        ret_tree->merge_branches(x, y, accumulatedx, accumulatedy);
+        ret_tree->merge_branches(x, y, accumulatedx, accumulatedy, levelroot_pairs);
         
         // ret_tree->merge_branches_gaz(x, y, accumulatedx);
 
