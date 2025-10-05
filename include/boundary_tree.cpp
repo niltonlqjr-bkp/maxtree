@@ -494,7 +494,7 @@ bool boundary_tree::search_cicle(int64_t s){
 }
 
 
-/* ver o merge das linhas do grid 4 e 5 na divisão 8x8*/
+/* ver como somar os atributos para os 3 casos de merge */
 void boundary_tree::merge_branches(boundary_node *x, boundary_node *y, 
                                    std::unordered_map<uint64_t, bool> &accx, 
                                    std::unordered_map<uint64_t, bool> &accy,
@@ -533,17 +533,6 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
         thisx = this->get_border_node(xidx);
         thisy = this->get_border_node(yidx); 
 
-        if(levelroot_pairs.find(xidx) != levelroot_pairs.end()){
-            incx_node = this->get_border_node(levelroot_pairs[xidx]);
-        }else{
-            incx_node = thisx;
-        }
-        if(levelroot_pairs.find(yidx) != levelroot_pairs.end()){
-            incy_node = this->get_border_node((levelroot_pairs[yidx]));
-        }else{
-            incy_node = thisy;
-        }
-
         auto x_at_ytree = y->bound_tree_ptr->get_border_node(x->ptr_node->global_idx);
         auto y_at_xtree = x->bound_tree_ptr->get_border_node(y->ptr_node->global_idx);
 
@@ -556,47 +545,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             }
             xpar=x->bound_tree_ptr->get_bnode_levelroot(x->boundary_parent);
             ypar=y->bound_tree_ptr->get_bnode_levelroot(y->boundary_parent);
-
-
-            if(accx.find(xidx) == accx.end() || !accx[xidx]){
-                b+=x->ptr_node->attribute;
-                carryx = x->ptr_node->attribute;
-                // b+=thisx->ptr_node->attribute;
-                // carryx = thisx->ptr_node->attribute;
-                carryxidx = xidx;
-                addx = accx[xidx] = true;
-            }
-            if(accy.find(yidx) == accy.end() || !accy[yidx]){
-                b+=y->ptr_node->attribute;
-                carryy = y->ptr_node->attribute;
-                // b+=thisy->ptr_node->attribute;
-                // carryy = thisy->ptr_node->attribute;
-                carryyidx = yidx;
-                addy = accy[yidx] = true;
-            }
-
-
-
-            if(verbose) std::cout << "      addx:" << addx << " addy:" << addy << "\n";
-
-            if(addx && addy){
-                incx_node->ptr_node->attribute = b;
-                incy_node->ptr_node->attribute = b;
-            }else if(addy){
-                // ver levelroot pair do x
-                incx_node->ptr_node->attribute += b;
-                incy_node->ptr_node->attribute = incx_node->ptr_node->attribute;
-            }else if(addx){
-                // ver levelroot pair do y
-                incy_node->ptr_node->attribute += b;
-                incx_node->ptr_node->attribute = incy_node->ptr_node->attribute; 
-            }else{
-                carryx = carryy = Tattr_NULL;
-                carryxidx = carryyidx = NULL_IDX;;
-            }
-            
-            
-            
+     
             if(verbose) std::cout << "      antes - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
             
             if(levelroot_pairs.find(xidx) == levelroot_pairs.end() && levelroot_pairs.find(yidx) == levelroot_pairs.end()){
@@ -664,6 +613,52 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             
             if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
             
+            if(levelroot_pairs.find(xidx) != levelroot_pairs.end()){
+                incx_node = this->get_border_node(levelroot_pairs[xidx]);
+            }else{
+                incx_node = thisx;
+            }
+            
+            if(levelroot_pairs.find(yidx) != levelroot_pairs.end()){
+                incy_node = this->get_border_node((levelroot_pairs[yidx]));
+            }else{
+                incy_node = thisy;
+            }
+
+            if(accx.find(xidx) == accx.end() || !accx[xidx]){
+                b+=x->ptr_node->attribute;
+                carryx = x->ptr_node->attribute;
+                // b+=thisx->ptr_node->attribute;
+                // carryx = thisx->ptr_node->attribute;
+                carryxidx = xidx;
+                addx = accx[xidx] = true;
+            }
+            if(accy.find(yidx) == accy.end() || !accy[yidx]){
+                b+=y->ptr_node->attribute;
+                carryy = y->ptr_node->attribute;
+                // b+=thisy->ptr_node->attribute;
+                // carryy = thisy->ptr_node->attribute;
+                carryyidx = yidx;
+                addy = accy[yidx] = true;
+            }
+
+            if(verbose) std::cout << "      addx:" << addx << " addy:" << addy << "\n";
+
+            if(addx && addy){
+                incx_node->ptr_node->attribute = b;
+                incy_node->ptr_node->attribute = b;
+            }else if(addy){
+                // ver levelroot pair do x
+                incx_node->ptr_node->attribute += b;
+                incy_node->ptr_node->attribute = incx_node->ptr_node->attribute;
+            }else if(addx){
+                // ver levelroot pair do y
+                incy_node->ptr_node->attribute += b;
+                incx_node->ptr_node->attribute = incy_node->ptr_node->attribute; 
+            }else{
+                carryx = carryy = Tattr_NULL;
+                carryxidx = carryyidx = NULL_IDX;;
+            }
             xold=x;
             yold=y;
             x=xpar;
@@ -680,21 +675,10 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             }else{
                 thisyold = this->get_border_node(yoldidx);
             }
-
-            if(accx.find(xidx) == accx.end() || !accx[xidx]){
-                // carryx = x->ptr_node->attribute;
-                carryx = thisx->ptr_node->attribute;
-                carryxidx = xidx;
-                accx[xidx] = true;
-            }
-            if(verbose) std::cout << "      antes - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
-            // thisx->ptr_node->attribute += carryy;//yold->ptr_node->attribute ;
-            incx_node->ptr_node->attribute += carryy;//yold->ptr_node->attribute ;
-            if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
-
+            
             xpar=x->bound_tree_ptr->get_bnode_levelroot(x->boundary_parent);
             // thisyold->border_lr = xidx;
-
+            
             if(xpar && xpar->ptr_node->gval > y->ptr_node->gval){
                 if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){
                     thisyold->boundary_parent = xidx;
@@ -711,6 +695,23 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 }
                 // thisx->border_lr = yidx; 
             }
+
+            if(levelroot_pairs.find(xidx) != levelroot_pairs.end()){
+                incx_node = this->get_border_node(levelroot_pairs[xidx]);
+            }else{
+                incx_node = thisx;
+            }
+
+            if(accx.find(xidx) == accx.end() || !accx[xidx]){
+                // carryx = x->ptr_node->attribute;
+                carryx = thisx->ptr_node->attribute;
+                carryxidx = xidx;
+                accx[xidx] = true;
+            }
+            if(verbose) std::cout << "      antes - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
+            // thisx->ptr_node->attribute += carryy;//yold->ptr_node->attribute ;
+            incx_node->ptr_node->attribute += carryy;//yold->ptr_node->attribute ;
+            if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
             
             xold=x;
             x=xpar;
@@ -727,6 +728,31 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 thisxold = this->get_border_node(xoldidx);
             }
 
+            ypar=y->bound_tree_ptr->get_bnode_levelroot(y->boundary_parent);
+            // thisxold->border_lr = yidx;
+
+            if(ypar && ypar->ptr_node->gval > x->ptr_node->gval){
+                if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
+                    thisxold->boundary_parent = yidx;
+                }else{
+                    thisxold->boundary_parent = levelroot_pairs[yidx];
+                }
+            }
+            
+            if(!ypar || ypar->ptr_node->gval < x->ptr_node->gval) { 
+                if(levelroot_pairs.find(xidx) == levelroot_pairs.end()){
+                    thisy->boundary_parent = xidx;
+                }else{
+                    thisy->boundary_parent = levelroot_pairs[xidx];
+                }
+                // thisy->border_lr = xidx;               
+            }
+
+            if(levelroot_pairs.find(yidx) != levelroot_pairs.end()){
+                incy_node = this->get_border_node((levelroot_pairs[yidx]));
+            }else{
+                incy_node = thisy;
+            }
             if(accy.find(yidx) == accy.end() || !accy[yidx]){
                 // carryy = y->ptr_node->attribute;
                 carryy = thisy->ptr_node->attribute;
@@ -737,27 +763,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             // thisy->ptr_node->attribute += carryx;//xold->ptr_node->attribute;
             incy_node->ptr_node->attribute += carryx;//xold->ptr_node->attribute;
             if(verbose) std::cout << "      depois - x: "<< thisx->to_string() << " y: " << thisy->to_string() << "\n";
-        
-            ypar=y->bound_tree_ptr->get_bnode_levelroot(y->boundary_parent);
-            // thisxold->border_lr = yidx;
             
-
-            if(ypar && ypar->ptr_node->gval > x->ptr_node->gval){
-                if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
-                    thisxold->boundary_parent = yidx;
-                }else{
-                    thisxold->boundary_parent = levelroot_pairs[yidx];
-                }
-            }
-
-            if(!ypar || ypar->ptr_node->gval < x->ptr_node->gval) { 
-                if(levelroot_pairs.find(xidx) == levelroot_pairs.end()){
-                    thisy->boundary_parent = xidx;
-                }else{
-                    thisy->boundary_parent = levelroot_pairs[xidx];
-                }
-                // thisy->border_lr = xidx;               
-            }
             yold=y;
             y=ypar;    
         }        
