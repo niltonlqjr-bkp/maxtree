@@ -4,11 +4,31 @@ import argparse
 import networkx as nx
 import matplotlib.pyplot as plt
 
- 
 def get_field(line, name, tp, sep=','):
     tfield = line.split(name)[1]
     field = tfield.split(sep)[0]
     return tp(field)
+
+def filter_leafs(t):
+    all_parents_gval = {}
+    for ld in t:
+        parent = get_field(ld, "bound_parent:", int)
+        all_parents_gval[parent] = -1
+    
+    for ld in t:
+        idx = get_field(ld, "idx:", int)
+        if idx in all_parents_gval:
+            all_parents_gval[idx] = get_field(ld, "gval:", int)
+
+    ret = []
+    for ld in t:
+        idx = get_field(ld, "idx:", int)
+        gval = get_field(ld, "gval:", int)
+        parent = get_field(ld, "bound_parent:", int)
+        if idx in all_parents_gval or gval != all_parents_gval[parent]:
+            ret.append(ld)
+    return ret
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', help = 'filename')
@@ -18,6 +38,7 @@ parser.add_argument('--output-ext', '-e', dest='ext', default='pdf', help='outpu
 parser.add_argument('--show-values', '-s', dest='scale', type=int, default=5 , help='constant of spacing between nodes')
 parser.add_argument('--node-size', '-n', dest='node_size', default=150, type=int, help='size of nodes in final figure')
 parser.add_argument('--font-size', '-f', dest='font_size', default=5, type=int, help='size of nodes in final figure')
+parser.add_argument('--no-leafs', dest='no_leaf', action='store_true', help='dont put leafs on the tree')
 args = parser.parse_args()
 
 
@@ -28,6 +49,7 @@ ext= args.ext
 out_dir = args.out_dir
 out_prefix = args.output
 space_scale = args.scale
+no_leaf = args.no_leaf
 
 with open(fn) as f:
     texto = f.read()
@@ -87,7 +109,9 @@ for tdata in all_trees:
     f.close()
 
     g = nx.DiGraph()
-    
+    if no_leaf:
+        tdata['data'] = filter_leafs(tdata['data'])
+
     for ld in tdata['data']:
         idx = get_field(ld, "idx:", int)
         gval = get_field(ld, "gval:", int)
