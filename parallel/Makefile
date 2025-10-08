@@ -27,9 +27,16 @@ source_grow=${grow_name}.cpp
 source_merge=${merge_name}.cpp
 source_divide=${divide_name}.cpp
 
-dest_grow=exec/${grow_name}
+dest_grow = exec/${grow_name}
 dest_divide = exec/${divide_name}
 dest_merge = exec/${merge_name}
+
+l ?= 3
+c ?= 5
+
+test_file = ../testes/example_gotz.png
+config_file = ../configs/print_trees_config_${l}l${c}c.txt
+output_text_tree = saidas/text/tree_${l}l${c}c.txt
 
 all: merge 
 
@@ -86,6 +93,11 @@ maxtree_node.o: ${maxtree_node_dir}/maxtree_node.cpp ${maxtree_node_dir}/maxtree
 
 utils.o: ${utils_dir}/utils.cpp ${utils_dir}/utils.hpp
 	g++ ${OBJ_CPP_FLAGS} ${utils_dir}/utils.cpp ${vips_args} -I${utils_dir} -o ${utils_dir}/utils.o
+
+test: merge
+	./${dest_merge} ${test_file} ${config_file} > ${output_text_tree} 
+
+
 
 #heap.o:
 #	g++ ${OBJ_CPP_FLAGS} ${heap_dir}/heap.cpp -I${heap_dir} -o ${heap_dir}/heap.o

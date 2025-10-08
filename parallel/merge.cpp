@@ -532,14 +532,16 @@ int main(int argc, char *argv[]){
         }
     }
     std::cout << "final image size:(" << final_image->h << ", " << final_image->w << ")\n";
-    std::cout << "final attribute tree:\n";
-    std::cout << final_image->to_string(ATTRIBUTE,colored, 5);
-    
-    std::cout << "real image:\n";
-    std::cout << final_image->to_string(GVAL,colored, 5,0);
+    if(verbose){
+        std::cout << "final attribute tree:\n";
+        std::cout << final_image->to_string(ATTRIBUTE,colored, 5);
+        
+        std::cout << "real image:\n";
+        std::cout << final_image->to_string(GVAL,colored, 5,0);
 
-    std::cout << "labels:\n";
-    std::cout << final_image->to_string(LABEL,colored, 5,0);
+        std::cout << "labels:\n";
+        std::cout << final_image->to_string(LABEL,colored, 5,0);
+    }
     
 
     //as boundary trees tem alturas e tamanhos distintos, logo é possível estimar o custo de um merge

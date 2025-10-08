@@ -9,9 +9,9 @@ server=10.1.1.2
 # number of threads for the process 
 threads=2
 # grid lines
-glines=2
+glines=3
 # grid columns
-gcolumns=4
+gcolumns=5
 
 # print some information(true/false)
 verbose=false
@@ -25,7 +25,7 @@ server = 10.1.1.2
 lambda=100000
 
 #output filename
-output=../output/parallel/lambda_100000
+output=../output/parallel/3l5c/lambda_100000
 
 #output extension (only the libvips extensions)
 output_ext=png
