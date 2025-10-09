@@ -697,7 +697,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 }else{
                     thisyold->boundary_parent = levelroot_pairs[xidx];
                 }
-            }
+            }else
             if(!xpar || xpar->ptr_node->gval < y->ptr_node->gval){ 
                 if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
                     thisx->boundary_parent = yidx; 
@@ -712,9 +712,9 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             }
 
             if(accx.find(xidx) == accx.end() || !accx[xidx]){
-                carryx = x->ptr_node->attribute;
+                // carryx = x->ptr_node->attribute;
                 // carryx = thisx->ptr_node->attribute;
-                // carryx = incx_node->ptr_node->attribute;
+                carryx = incx_node->ptr_node->attribute;
                 carryxidx = xidx;
                 accx[xidx] = true;
             }
@@ -741,8 +741,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 }else{
                     thisxold->boundary_parent = levelroot_pairs[yidx];
                 }
-            }
-            
+            }else 
             if(!ypar || ypar->ptr_node->gval < x->ptr_node->gval) { 
                 if(levelroot_pairs.find(xidx) == levelroot_pairs.end()){
                     thisy->boundary_parent = xidx;
@@ -757,9 +756,9 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 incy_node = this->get_border_node(yidx);
             }
             if(accy.find(yidx) == accy.end() || !accy[yidx]){
-                carryy = y->ptr_node->attribute;
+                // carryy = y->ptr_node->attribute;
                 // carryy = thisy->ptr_node->attribute;
-                // carryy = incy_node->ptr_node->attribute;
+                carryy = incy_node->ptr_node->attribute;
                 carryyidx = yidx;
                 accy[yidx] = true;
             }
@@ -813,8 +812,6 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
 
 }
 
-// erro aqui
-//erro
 void boundary_tree::combine_lroot_trees(boundary_tree *t1, boundary_tree *t2){
     boundary_node *n, *insert_node;
 

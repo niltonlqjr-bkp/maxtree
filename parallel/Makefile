@@ -31,12 +31,20 @@ dest_grow = exec/${grow_name}
 dest_divide = exec/${divide_name}
 dest_merge = exec/${merge_name}
 
+
 l ?= 3
 c ?= 5
 
-test_file = ../testes/example_gotz.png
-config_file = ../configs/print_trees_config_${l}l${c}c.txt
-output_text_tree = saidas/text/tree_${l}l${c}c.txt
+test_file ?= ../testes/example_gotz.png
+config_file ?= ../configs/print_trees_config_${l}l${c}c.txt
+output_text_dir ?= saidas/text
+output_text_tree ?= ${output_text_dir}/tree_${l}l${c}c.txt
+output_figures_trees ?= saidas/trees/tree_${l}l${c}c
+
+config_verbose_file = ../configs/verbose_config_${l}l${c}c.txt
+output_verbose = ${output_text_dir}/verbose_${l}l${c}c.txt
+
+figures_flag ?= 
 
 all: merge 
 
@@ -95,8 +103,15 @@ utils.o: ${utils_dir}/utils.cpp ${utils_dir}/utils.hpp
 	g++ ${OBJ_CPP_FLAGS} ${utils_dir}/utils.cpp ${vips_args} -I${utils_dir} -o ${utils_dir}/utils.o
 
 test: merge
-	./${dest_merge} ${test_file} ${config_file} > ${output_text_tree} 
+	@mkdir -p ${output_text_dir} 
+	./${dest_merge} ${test_file} ${config_verbose_file} > ${output_verbose} 
 
+figures: merge
+	./${dest_merge} ${test_file} ${config_file} > ${output_text_tree} 
+	@mkdir -p ${output_figures_trees}
+	python3 ../util/trees_logs2fig.py ${output_text_tree} -d ${output_figures_trees} -e pdf ${figures_flag}
+
+test+figures: test figures
 
 
 #heap.o:
