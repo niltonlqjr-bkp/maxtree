@@ -64,6 +64,12 @@ void print_VImage_band(vips::VImage *in, int band){
     return;
 }
 
+uint64_t get_levroot_pair_idx(std::unordered_map<int64_t, int64_t> &lrp, uint64_t idx){
+    if(lrp.find(idx) == lrp.end()){
+        return idx;
+    }
+    return lrp[idx];
+}
 
 std::string ltrim(std::string s, const std::string b){
     s.erase(0, s.find_first_not_of(b));

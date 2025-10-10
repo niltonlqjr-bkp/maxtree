@@ -84,4 +84,6 @@ maxtree_node *min_gval(std::unordered_map<int, maxtree_node*> *t);
 
 void print_pq(std::priority_queue<maxtree_node*> pq);
 
+uint64_t get_levroot_pair_idx(std::unordered_map<int64_t, int64_t> &lrp, uint64_t idx);
+
 #endif
