@@ -676,13 +676,14 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             }
             
             xpar=x->bound_tree_ptr->get_bnode_levelroot(x->boundary_parent);
-            if(xpar != NULL && xpar->ptr_node->gval > y->ptr_node->gval){
+            
+            // if(xpar != NULL && xpar->ptr_node->gval > y->ptr_node->gval){
                 if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){
                     thisyold->boundary_parent = xidx;
                 }else{
                     thisyold->boundary_parent = levelroot_pairs[xidx];
                 }
-            }
+            // }
 
             if(xpar == NULL || xpar->ptr_node->gval < y->ptr_node->gval){ 
                 if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
@@ -690,7 +691,16 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 }else{
                     thisx->boundary_parent = levelroot_pairs[yidx]; 
                 }
+            }else{
+                auto xparidx = xpar->ptr_node->global_idx;
+                if(levelroot_pairs.find(xparidx) == levelroot_pairs.end()){
+                    thisx->boundary_parent = xparidx; 
+                }else{
+                    thisx->boundary_parent = levelroot_pairs[xparidx]; 
+                }
             }
+
+
             if(levelroot_pairs.find(xidx) != levelroot_pairs.end()){
                 incx_node = this->get_border_node(levelroot_pairs[xidx]);
             }else{
@@ -721,19 +731,28 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             }
 
             ypar=y->bound_tree_ptr->get_bnode_levelroot(y->boundary_parent);
-            if(ypar != NULL && ypar->ptr_node->gval > x->ptr_node->gval){
+            
+            
+            // if(ypar != NULL && ypar->ptr_node->gval > x->ptr_node->gval){
                 if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
                     thisxold->boundary_parent = yidx;
                 }else{
                     thisxold->boundary_parent = levelroot_pairs[yidx];
                 }
-            }
+            // }
 
-            if(ypar == NULL || ypar->ptr_node->gval < x->ptr_node->gval) { 
+            if(ypar == NULL || ypar->ptr_node->gval <= x->ptr_node->gval) { 
                 if(levelroot_pairs.find(xidx) == levelroot_pairs.end()){
                     thisy->boundary_parent = xidx;
                 }else{
                     thisy->boundary_parent = levelroot_pairs[xidx];
+                }
+            }else{
+                auto yparidx=ypar->ptr_node->global_idx;
+                if(levelroot_pairs.find(yparidx) == levelroot_pairs.end()){
+                    thisy->boundary_parent = yparidx;
+                }else{
+                    thisy->boundary_parent = levelroot_pairs[yparidx];
                 }
             }
 
