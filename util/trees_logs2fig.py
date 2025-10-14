@@ -37,7 +37,7 @@ parser.add_argument('--output-prefix', '-o', dest='output', default='fig', help=
 parser.add_argument('--output-ext', '-e', dest='ext', default='pdf', help='output file extension')
 parser.add_argument('--show-values', '-s', dest='scale', type=int, default=5 , help='constant of spacing between nodes')
 parser.add_argument('--node-size', '-n', dest='node_size', default=150, type=int, help='size of nodes in final figure')
-parser.add_argument('--font-size', '-f', dest='font_size', default=5, type=int, help='size of nodes in final figure')
+parser.add_argument('--font-size', '-f', dest='font_size', default=4, type=int, help='size of nodes in final figure')
 parser.add_argument('--no-leafs', dest='no_leaf', action='store_true', help='dont put leafs on the tree')
 args = parser.parse_args()
 
@@ -141,8 +141,10 @@ for tdata in all_trees:
     
     node_colors = ["#"+3*(hex(g.nodes[node]['gval']).split('x')[-1].rjust(2).replace(' ','0')) for node in g.nodes()]
 
-    nx.draw(g, with_labels=False, pos=pdot, node_size=nsize, font_size=fsize, font_color='red', node_color=node_colors)
-    nx.draw_networkx_labels(g, pos=pdot, font_size=fsize, font_color='red', labels={idx: str(idx)+'/'+str(g.nodes[idx]['attr']) for idx in g.nodes()})
+    text_box = {'fc':'white', 'ec':'white', 'mutation_aspect':0.4}
+    
+    nx.draw(g, with_labels=False, pos=pdot, node_size=nsize, edgecolors='black', font_size=fsize, node_color=node_colors)
+    nx.draw_networkx_labels(g, pos=pdot, font_size=fsize, bbox=text_box, font_color='black', labels={idx: str(idx)+'/'+str(g.nodes[idx]['attr']) for idx in g.nodes()})
     out_name = f"{out_dir}/imgs/{out_prefix}_{tdata['nome']}.{ext}"
     plt.savefig(out_name)
     plt.clf()
