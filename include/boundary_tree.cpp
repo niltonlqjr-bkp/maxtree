@@ -581,7 +581,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                         thisy->boundary_parent = xidx;
                     }
                 }
-            }else if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){
+            }else if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){ // levelroot of merge is y
                 levelroot_pairs[xidx] = levelroot_pairs[yidx];
                 if(yidx != xidx){
                     thisx->boundary_parent = levelroot_pairs[yidx];
@@ -597,7 +597,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                     thisy->boundary_parent = levelroot_pairs[xidx];
                 }
                 if(ypar != NULL){
-                    if(xpar == NULL || xpar->ptr_node->gval ){
+                    if(xpar == NULL || xpar->ptr_node->gval < ypar->ptr_node->gval){
                         thisx->boundary_parent = get_levroot_pair_idx(levelroot_pairs, ypar->ptr_node->global_idx);
                     }    
                 }
