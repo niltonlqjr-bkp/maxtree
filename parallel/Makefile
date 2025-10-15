@@ -44,7 +44,7 @@ output_figures_trees ?= saidas/trees/tree_${l}l${c}c
 config_verbose_file = ../configs/verbose_config_${l}l${c}c.txt
 output_verbose = ${output_text_dir}/verbose_${l}l${c}c.txt
 
-figures_flag ?= 
+figures_flags ?= 
 
 all: merge 
 
@@ -109,7 +109,7 @@ test: merge
 figures: merge
 	./${dest_merge} ${test_file} ${config_file} > ${output_text_tree} 
 	@mkdir -p ${output_figures_trees}
-	python3 ../util/trees_logs2fig.py ${output_text_tree} -d ${output_figures_trees} -e pdf ${figures_flag}
+	python3 ../util/trees_logs2fig.py ${output_text_tree} -d ${output_figures_trees} -e pdf ${figures_flags}
 
 test+figures: test figures
 

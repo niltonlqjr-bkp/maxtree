@@ -636,21 +636,21 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 // x->ptr_node->attribute = b;
                 // y->ptr_node->attribute = b;
             }else if(addy){
-                carryy_out = Tattr_NULL;
-                // carryx_out = incx_node->ptr_node->attribute;
-                carryx_out = x->ptr_node->attribute;
+                carryy_out = carryx_in;
+                carryx_out = incx_node->ptr_node->attribute;
+                // carryx_out = x->ptr_node->attribute;
                 // carryx_out = thisx->ptr_node->attribute;
                 incx_node->ptr_node->attribute += b;
                 incy_node->ptr_node->attribute = incx_node->ptr_node->attribute;
             }else if(addx){
-                carryx_out = Tattr_NULL;
-                // carryy_out = incy_node->ptr_node->attribute;
-                carryy_out = y->ptr_node->attribute;
+                carryx_out = carryx_in;
+                carryy_out = incy_node->ptr_node->attribute;
+                // carryy_out = y->ptr_node->attribute;
                 // carryy_out = thisy->ptr_node->attribute;
                 incy_node->ptr_node->attribute += b;
                 incx_node->ptr_node->attribute = incy_node->ptr_node->attribute;
             }else{
-                 carryx_out = carryy_out = Tattr_NULL;
+                carryx_out = carryy_out = Tattr_NULL;
             }
 
             x=xpar;
@@ -669,7 +669,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             
             if(accx.find(xidx) == accx.end() || !accx[xidx]){
                 // carryx_out = incx_node->ptr_node->attribute;
-                carryx_out = x->ptr_node->attribute;
+                carryx_out = incx_node->ptr_node->attribute;
                 // carryx_out = thisx->ptr_node->attribute;
                 addx = accx[xidx] = true;
             }
@@ -696,7 +696,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
 
             if(accy.find(yidx) == accy.end() || !accy[yidx]){
                 // carryy_out = incy_node->ptr_node->attribute;
-                carryy_out = y->ptr_node->attribute;
+                carryy_out = incy_node->ptr_node->attribute;
                 // carryy_out = thisy->ptr_node->attribute;
                 addy = accy[yidx] = true;
             }
