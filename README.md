@@ -1,6 +1,7 @@
-<<<<<<< HEAD
+
 # maxtree
-maxtree backup
+maxtree in backup account backup (new repository)
+Old [account](https://github.com/niltonlqjr) was disabled
 =======
 ### Maxtree parallel implementations
 
@@ -30,4 +31,3 @@ $ make
 $ cd sequential/flood
 $ make
 ```
->>>>>>> 40af2f2 (new repository)
