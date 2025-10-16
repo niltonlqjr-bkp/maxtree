@@ -1,7 +1,8 @@
 
 # maxtree
-maxtree in backup account backup (new repository)
-Old [account](https://github.com/niltonlqjr) was disabled
+Parallel Maxtree implementation in a new account (Old one was disabled).
+[Old repository](https://github.com/niltonlqjr/maxtree) 
+
 =======
 ### Maxtree parallel implementations
 
