@@ -111,7 +111,7 @@ figures: merge
 	@mkdir -p ${output_figures_trees}
 	python3 ../util/trees_logs2fig.py ${output_text_tree} -d ${output_figures_trees} -e pdf ${figures_flags}
 
-test+figures: test figures
+test_figures: test figures
 
 
 #heap.o:

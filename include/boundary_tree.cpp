@@ -667,6 +667,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             auto incx_idx = get_levroot_pair_idx(levelroot_pairs, xidx);
             incx_node = this->get_border_node(incx_idx);
             
+            carryy_out = carryy_in;
             if(accx.find(xidx) == accx.end() || !accx[xidx]){
                 // carryx_out = incx_node->ptr_node->attribute;
                 carryx_out = incx_node->ptr_node->attribute;
@@ -674,10 +675,10 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 addx = accx[xidx] = true;
             }
             if(verbose) std::cout << "      antes - thisx: "<< thisx->to_string() << " thisy: " << thisy->to_string() << "\n";
-            if(addx){
+            // if(addx){
                 incx_node->ptr_node->attribute += carryy_in;
-                carryy_out = carryy_in;
-            }
+                
+            // }
             if(verbose) std::cout << "      depois - thisx: "<< thisx->to_string() << " thisy: " << thisy->to_string() << "\n";
             
             // xold=x;
@@ -694,6 +695,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             auto incy_idx = get_levroot_pair_idx(levelroot_pairs, yidx);
             incy_node = this->get_border_node(incy_idx);
 
+            carryx_out = carryx_in;
             if(accy.find(yidx) == accy.end() || !accy[yidx]){
                 // carryy_out = incy_node->ptr_node->attribute;
                 carryy_out = incy_node->ptr_node->attribute;
@@ -701,10 +703,10 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 addy = accy[yidx] = true;
             }
             if(verbose) std::cout << "      antes - thisx: "<< thisx->to_string() << " thisy: " << thisy->to_string() << "\n";
-            if(addy){
+            // if(addy){
                 incy_node->ptr_node->attribute += carryx_in;//xold->ptr_node->attribute;
-                carryx_out = carryx_in;
-            }
+                
+            // }
             if(verbose) std::cout << "      depois - thisx: "<< thisx->to_string() << " thisy: " << thisy->to_string() << "\n";
             
             y=ypar;    
