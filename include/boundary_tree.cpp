@@ -637,14 +637,14 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 // carryy_out = thisy->ptr_node->attribute;
 
             }else if(addy){
-                carryy_out = carryy_in;
+                carryy_out = y->ptr_node->attribute;;
                 carryx_out = incx_node->ptr_node->attribute;
                 // carryx_out = x->ptr_node->attribute;
                 // carryx_out = thisx->ptr_node->attribute;
                 incx_node->ptr_node->attribute += b;
                 incy_node->ptr_node->attribute = incx_node->ptr_node->attribute;
             }else if(addx){
-                carryx_out = carryx_in;
+                carryx_out = x->ptr_node->attribute;
                 carryy_out = incy_node->ptr_node->attribute;
                 // carryy_out = y->ptr_node->attribute;
                 // carryy_out = thisy->ptr_node->attribute;
@@ -668,7 +668,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 levelroot_pairs[xidx] = xidx;
             }
             incx_node = this->get_border_node(incx_idx);
-            
+            carryx_out = carryx_in;
             carryy_out = carryy_in;
             if(accx.find(xidx) == accx.end() || !accx[xidx]){
                 // carryx_out = incx_node->ptr_node->attribute;
@@ -679,7 +679,6 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
             if(verbose) std::cout << "      antes - thisx: "<< thisx->to_string() << " thisy: " << thisy->to_string() << "\n";
             incx_node->ptr_node->attribute += carryy_in;
             if(verbose) std::cout << "      depois - thisx: "<< thisx->to_string() << " thisy: " << thisy->to_string() << "\n";
-            
             x=xpar;
         }else if(x->ptr_node->gval < y->ptr_node->gval){ // ver esse caso no merge (0,0 + 0,1 + 0,2 + 0,3 + 0,4) com (1,0 + 1,1 + 1,2 + 1,3 + 1,4) 
             if(verbose) std::cout << "   case 3\n"  << "      x " << x->to_string() << " < y "<< y->to_string() <<" gval\n";
@@ -693,7 +692,7 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
                 levelroot_pairs[yidx] = yidx;
             }
             incy_node = this->get_border_node(incy_idx);
-
+            carryy_out = carryy_in;
             carryx_out = carryx_in;
             if(accy.find(yidx) == accy.end() || !accy[yidx]){
                 // carryy_out = incy_node->ptr_node->attribute;
