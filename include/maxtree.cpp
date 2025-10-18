@@ -544,7 +544,7 @@ void maxtree::filter(Tattribute lambda, boundary_tree *bt){
         llr = this->get_levelroot(node);
         if(llr->attribute >= lambda){
             label_lr = llr;
-            label_lr->set_label(label_lr->label);
+            label_lr->set_label(label_lr->gval);
         }else{
             //if levelroot node attribute is lower than lambda, i need to search the local node that 
             while(llr!=NULL && llr->attribute < lambda){
@@ -584,7 +584,7 @@ void maxtree::filter(Tattribute lambda, boundary_tree *bt){
                 llr_stack.pop_back();
             }
         }
-        node->set_label(label_lr->label);
+        node->set_label(label_lr->gval);
     }
 }
 
