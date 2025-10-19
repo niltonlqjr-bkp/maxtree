@@ -114,6 +114,8 @@ class maxtree{
         
         void filter(Tattribute a);
 
+        maxtree_node *up_tree_filter(maxtree_node *n, Tattribute lambda, boundary_tree *bt);
+
         uint64_t get_size();
         
         // std::unordered_map<int, maxtree_node*> *get_data();

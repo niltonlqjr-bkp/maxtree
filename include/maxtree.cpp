@@ -449,32 +449,14 @@ void maxtree::update_node_attr(maxtree_node *n, boundary_tree *bt){
         n->compute_attribute(glr->ptr_node->attribute);
         n->global_parent = glr->ptr_node->global_idx;
     }else{
-        auto llr = this->get_levelroot(n->parent);
-        if(!llr->attr_final){
-            this->update_node_attr(llr, bt);
-        }
+        auto llr = this->get_levelroot(n);
         n->compute_attribute(llr->attribute);
         n->global_parent = llr->global_idx;
     }
 }
 
 void maxtree::update_from_boundary_tree(boundary_tree *bt){
-    // boundary_node *n;
-    // for(auto boundary_pair: *(bt->boundary_tree_lroot)){
-    //     auto bn = boundary_pair.second;
-    //     if(bn->ptr_node->idx < this->data->size()){//if it has the possibility of being at this maxtree
-    //         auto n = this->at_pos(bn->ptr_node->idx);
-    //         if(n->global_idx == bn->ptr_node->global_idx){// if this boundary node is the same node that is on mergetre
-    //             auto global_lroot = bt->get_bnode_levelroot(n->global_idx);
 
-    //             if(global_lroot != NULL){
-    //                 n->attribute = global_lroot->ptr_node->attribute;
-    //                 n->global_parent = global_lroot->ptr_node->global_idx;
-    //             }
-    //         } 
-    //     }
-    // }
-    // std::cout << "update_from_boundary_tree\n";
     for(auto n: *(this->data)){
         auto llr = this->get_levelroot(n); // local levelroot
         if(!llr->attr_final){
@@ -532,7 +514,70 @@ void maxtree::filter(Tattribute lambda){
 }
 
 
- 
+maxtree_node *maxtree::up_tree_filter(maxtree_node *n, Tattribute lambda, boundary_tree *bt){
+    maxtree_node *llr, *llr_last, *llr_par, *label_lr;
+    boundary_node *glr;
+    llr = this->get_levelroot(n);
+    if(llr->attribute >= lambda){
+        llr->set_label(llr->gval);
+        return llr;
+    }else if(llr->parent != NO_PARENT){
+        llr_par = this->get_levelroot(llr->parent);
+        label_lr = this->up_tree_filter(llr_par, lambda, bt); 
+    }else{
+        label_lr = bt->up_tree_filter(llr->global_idx, lambda);
+    }
+    return label_lr;
+
+    
+
+    /*
+    if(llr->attribute >= lambda){
+            label_lr = llr;
+            label_lr->set_label(label_lr->gval);
+    }else{
+        //if levelroot node attribute is lower than lambda, i need to search the local node that 
+        while(llr!=NULL && llr->attribute < lambda){
+            llr_stack.push_back(llr);
+            llr = this->get_levelroot(llr->parent);
+        }
+        if(llr == NULL){
+            llr = llr_stack.back();
+            llr_stack.pop_back();
+            
+            glr = bt->get_bnode_levelroot(llr->global_idx);
+            while(glr!=NULL && glr->ptr_node->attribute < lambda){
+                glr_stack.push_back(glr);
+                glr = bt->get_bnode_levelroot(glr->boundary_parent);
+            }
+            if(glr!=NULL){
+                label_lr = glr->ptr_node;
+            }else{
+                label_lr = glr_stack.back()->ptr_node;
+                glr_stack.pop_back();
+            }
+            label_lr->set_label(label_lr->gval);
+            while(!glr_stack.empty()){
+                glr = glr_stack.back();
+                glr->ptr_node->set_label(label_lr->gval);
+                glr_stack.pop_back();
+            }
+            
+        }else if(llr->attribute >= lambda){
+            label_lr = llr;
+            label_lr->set_label(label_lr->gval);
+        }
+        llr->set_label(label_lr->gval);
+        while(!llr_stack.empty()){
+            llr = llr_stack.back();
+            llr->set_label(label_lr->gval);
+            llr_stack.pop_back();
+        }
+    } 
+    return label_lr;
+    */
+}
+
 void maxtree::filter(Tattribute lambda, boundary_tree *bt){
     std::vector<maxtree_node *> llr_stack;
     std::vector<boundary_node *> glr_stack;
@@ -540,50 +585,7 @@ void maxtree::filter(Tattribute lambda, boundary_tree *bt){
     boundary_node *glr; 
     
     for(auto node: *(this->data)){
-        
-        llr = this->get_levelroot(node);
-        if(llr->attribute >= lambda){
-            label_lr = llr;
-            label_lr->set_label(label_lr->gval);
-        }else{
-            //if levelroot node attribute is lower than lambda, i need to search the local node that 
-            while(llr!=NULL && llr->attribute < lambda){
-                llr_stack.push_back(llr);
-                llr = this->get_levelroot(llr->parent);
-            }
-            if(llr == NULL){
-                llr = llr_stack.back();
-                llr_stack.pop_back();
-                
-                glr = bt->get_bnode_levelroot(llr->global_idx);
-                while(glr!=NULL && glr->ptr_node->attribute < lambda){
-                    glr_stack.push_back(glr);
-                    glr = bt->get_bnode_levelroot(glr->boundary_parent);
-                }
-                if(glr!=NULL){
-                    label_lr = glr->ptr_node;
-                }else{
-                    label_lr = glr_stack.back()->ptr_node;
-                    glr_stack.pop_back();
-                }
-                label_lr->set_label(label_lr->gval);
-                while(!glr_stack.empty()){
-                    glr = glr_stack.back();
-                    glr->ptr_node->set_label(label_lr->gval);
-                    glr_stack.pop_back();
-                }
-                
-            }else if(llr->attribute >= lambda){
-                label_lr = llr;
-                label_lr->set_label(label_lr->gval);
-            }
-            llr->set_label(label_lr->gval);
-            while(!llr_stack.empty()){
-                llr = llr_stack.back();
-                llr->set_label(label_lr->gval);
-                llr_stack.pop_back();
-            }
-        }
+        label_lr = this->up_tree_filter(node, lambda, bt);
         node->set_label(label_lr->gval);
     }
 }

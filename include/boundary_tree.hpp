@@ -177,6 +177,9 @@ class boundary_tree{
         /* functions to help find bugs */
         bool search_cicle(int64_t s);
 
+        /* search for a node with attribute greater or equal than lambda */
+        maxtree_node *up_tree_filter(uint64_t gidx, Tattribute lambda);
+
 };
 
 

@@ -745,7 +745,20 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
 
 }
 
+maxtree_node *boundary_tree::up_tree_filter(uint64_t gidx, Tattribute lambda){
+    boundary_node *glr;
+    glr = this->get_bnode_levelroot(gidx);
+    if(glr->ptr_node->attribute >= lambda){
+        glr->ptr_node->set_label(glr->ptr_node->gval);
+        return glr->ptr_node;
+    }
+    if(glr->boundary_parent != NO_BOUNDARY_PARENT){
+        return this->up_tree_filter(glr->boundary_parent, lambda);
+    }else{
+        return glr->ptr_node;
+    }
 
+}
 
 
 
