@@ -464,7 +464,7 @@ void maxtree::update_from_boundary_tree(boundary_tree *bt){
         }
         n->compute_attribute(llr->attribute);
     }
-    // std::cout << "fim update_from_boundary_tree\n";
+
 }
 
 
@@ -528,54 +528,6 @@ maxtree_node *maxtree::up_tree_filter(maxtree_node *n, Tattribute lambda, bounda
         label_lr = bt->up_tree_filter(llr->global_idx, lambda);
     }
     return label_lr;
-
-    
-
-    /*
-    if(llr->attribute >= lambda){
-            label_lr = llr;
-            label_lr->set_label(label_lr->gval);
-    }else{
-        //if levelroot node attribute is lower than lambda, i need to search the local node that 
-        while(llr!=NULL && llr->attribute < lambda){
-            llr_stack.push_back(llr);
-            llr = this->get_levelroot(llr->parent);
-        }
-        if(llr == NULL){
-            llr = llr_stack.back();
-            llr_stack.pop_back();
-            
-            glr = bt->get_bnode_levelroot(llr->global_idx);
-            while(glr!=NULL && glr->ptr_node->attribute < lambda){
-                glr_stack.push_back(glr);
-                glr = bt->get_bnode_levelroot(glr->boundary_parent);
-            }
-            if(glr!=NULL){
-                label_lr = glr->ptr_node;
-            }else{
-                label_lr = glr_stack.back()->ptr_node;
-                glr_stack.pop_back();
-            }
-            label_lr->set_label(label_lr->gval);
-            while(!glr_stack.empty()){
-                glr = glr_stack.back();
-                glr->ptr_node->set_label(label_lr->gval);
-                glr_stack.pop_back();
-            }
-            
-        }else if(llr->attribute >= lambda){
-            label_lr = llr;
-            label_lr->set_label(label_lr->gval);
-        }
-        llr->set_label(label_lr->gval);
-        while(!llr_stack.empty()){
-            llr = llr_stack.back();
-            llr->set_label(label_lr->gval);
-            llr_stack.pop_back();
-        }
-    } 
-    return label_lr;
-    */
 }
 
 void maxtree::filter(Tattribute lambda, boundary_tree *bt){
@@ -621,10 +573,7 @@ void maxtree::fill_from_VRegion(vips::VRegion &reg_in, uint32_t base_h, uint32_t
 /*     if(verbose){
         std::cout << "filling: " << base_h << ", " << base_w << "..." << base_h+this->h << ", " << base_w+this->w <<"\n";
     } */
-     
-    /*char aux_enum_c[][50] = {"VIPS_FORMAT_UCHAR", "VIPS_FORMAT_CHAR", "VIPS_FORMAT_USHORT", "VIPS_FORMAT_SHORT", 
-         "VIPS_FORMAT_UINT", " VIPS_FORMAT_INT", " VIPS_FORMAT_FLOAT", " VIPS_FORMAT_COMPLEX", " VIPS_FORMAT_DOUBLE", 
-         "VIPS_FORMAT_DPCOMPLEX", "VIPS_FORMAT_LAST"};*/
+
     
     for(int l = 0; l < this->h; l++){
         for(int c = 0; c < this->w; c++){
@@ -860,102 +809,6 @@ std::vector<maxtree_node*> maxtree::get_neighbours(uint64_t pixel, uint8_t con){
     }
     return v;
 }
-
-
-/* void maxtree::filter(Tattribute lambda){
-    maxtree_node *aux, *p, *lr , *q, *r = this->root;
-
-    std::vector<maxtree_node *> stack;
-
-    if(r->attribute < lambda){
-        r->label = 0;//this->get_levelroot(this->at_pos(r->parent))->gval;
-    } else {
-        r->label = r->gval;
-    }
-    this->get_levelroot(r)
-    r->labeled = true;
-    uint64_t tot_labeled = 1;
-    uint64_t first_not_labeled=0;
-    p=this->at_pos(first_not_labeled);
-    while(first_not_labeled < this->get_size()){
-        p=this->at_pos(first_not_labeled);
-        if(p->attribute >= lambda){ 
-            p->label = p->gval;
-            p->labeled = true;
-        }else{ // p->atrribute < lambda and p is not labeled
-            lr = this->get_levelroot(p);
-            if(!lr->labeled){
-                if(lr->attribute >= lambda){
-                    lr->label = lr->gval;
-                    lr->labeled = true;
-                }else{// levelroot has no label and must be filtered off (attribute of component is not greater than lambda)
-                    while(!lr->labeled && lr->attribute < lambda){
-                        stack.push_back(lr);
-                        lr=this->get_parent(lr->idx);
-                    }
-                    //levelroot that pass on filter or labeled found in backward path
-                    if(!lr->labeled){
-                        lr->label = lr->gval;
-                        lr->labeled = true;
-                    }
-                    while(!stack.empty()){
-                        aux=stack.back();
-                        stack.pop_back();
-                        aux->label = lr->label;
-                        aux->labeled = true;
-
-                    }
-                }
-            }
-            p->label = lr->label;
-            p->labeled = true;
-        }
-        first_not_labeled++;
-    }
-} */
-
-
-/* void maxtree::filter(Tattribute lambda){
-    
-    maxtree_node *aux, *p, *q, *r = this->root;
-
-    std::vector<maxtree_node *> stack;
-
-    if(r->attribute < lambda){
-        r->label = 0//this->get_levelroot(this->at_pos(r->parent))->gval;
-    } else {
-        r->label = r->gval;
-    }
-    r->labeled = true;
-    for(uint64_t i=0; i < this->get_size(); i++){
-        p = this->at_pos(i);
-        stack.push_back(p);
-        while(!stack.empty()){
-            p = stack.back();
-            if(p->attribute > lambda){
-                p->label = p->gval;
-                p->labeled = true;
-                stack.pop_back();
-            }else{
-                q = this->get_parent(p->idx);
-                if(q){ 
-                    q = this->get_levelroot(q);
-                    if(q->gval <= p->gval){
-                        if(q->labeled){
-                            p->labeled = true;
-                            p->label = q->label;
-                            stack.pop_back();
-                        }else{
-                            stack.push_back(q);
-                        }
-                    }
-                }
-            }
-        }
-        
-    }
-} */
-
 
 void maxtree::save(std::string name, enum maxtee_node_field f){
     

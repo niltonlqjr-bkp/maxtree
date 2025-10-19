@@ -944,13 +944,11 @@ void boundary_tree::merge_branches_errado(boundary_node *x, boundary_node *y,
             
             xpar=x->bound_tree_ptr->get_bnode_levelroot(x->boundary_parent);
             
-            // if(xpar != NULL && xpar->ptr_node->gval > y->ptr_node->gval){
-                if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){
-                    thisyold->boundary_parent = xidx;
-                }else{
-                    thisyold->boundary_parent = levelroot_pairs[xidx];
-                }
-            // }
+            if (levelroot_pairs.find(xidx) == levelroot_pairs.end()){
+                thisyold->boundary_parent = xidx;
+            }else{
+                thisyold->boundary_parent = levelroot_pairs[xidx];
+            }
 
             if(xpar == NULL || xpar->ptr_node->gval < y->ptr_node->gval){ 
                 if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
@@ -999,14 +997,11 @@ void boundary_tree::merge_branches_errado(boundary_node *x, boundary_node *y,
 
             ypar=y->bound_tree_ptr->get_bnode_levelroot(y->boundary_parent);
             
-            
-            // if(ypar != NULL && ypar->ptr_node->gval > x->ptr_node->gval){
-                if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
-                    thisxold->boundary_parent = yidx;
-                }else{
-                    thisxold->boundary_parent = levelroot_pairs[yidx];
-                }
-            // }
+            if(levelroot_pairs.find(yidx) == levelroot_pairs.end()){
+                thisxold->boundary_parent = yidx;
+            }else{
+                thisxold->boundary_parent = levelroot_pairs[yidx];
+            }
 
             if(ypar == NULL || ypar->ptr_node->gval <= x->ptr_node->gval) { 
                 if(levelroot_pairs.find(xidx) == levelroot_pairs.end()){
@@ -1114,13 +1109,11 @@ void boundary_tree::combine_lroot_trees(boundary_tree *t1, boundary_tree *t2){
 }
 
 void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum merge_directions d){
-    // std::vector<boundary_node *> *v_t1, *v_t2, *new_border;
     std::vector<uint64_t> *v_t1, *v_t2, *new_border;
     enum borders first_border, second_border, third_border, fourth_border;
     uint64_t ini ;
     boundary_node *bn;
-    // boundary_node *node, *node_tree, *new_node;
-
+    
     if(d == MERGE_VERTICAL){
         first_border=LEFT_BORDER; second_border=RIGHT_BORDER; 
         third_border=TOP_BORDER; fourth_border=BOTTOM_BORDER;
