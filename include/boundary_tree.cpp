@@ -60,11 +60,12 @@ void boundary_node::accumulate_attr(Tattribute value){
 }
  */
 
-boundary_tree::boundary_tree(uint32_t h, uint32_t w, uint32_t grid_i, uint32_t grid_j){
+boundary_tree::boundary_tree(uint32_t h, uint32_t w, uint32_t grid_i, uint32_t grid_j, bool dn){
     this->h = h;
     this->w = w;
     this->grid_i = grid_i;
     this->grid_j = grid_j;
+    this->delete_nodes = dn;
     //this->border_elements = new std::vector<std::unordered_map<uint64_t, boundary_node *>*>();
     // this->border_elements = new std::vector<std::vector<boundary_node *>*>();
     this->border_elements = new std::vector<std::vector<uint64_t>*>();
@@ -80,19 +81,10 @@ boundary_tree::boundary_tree(uint32_t h, uint32_t w, uint32_t grid_i, uint32_t g
     this->boundary_tree_lroot = new std::unordered_map<uint64_t, boundary_node*>();
     //this->border_lr = -1;
 }
-/*
-boundary_tree::boundary_tree(std::vector<std::unordered_map<uint64_t, boundary_node *>*> *border_elements, 
-                             uint32_t h, uint32_t w, uint32_t grid_i, uint32_t grid_j){
-    this->h = h;
-    this->w = w;
-    this->grid_i = grid_i;
-    this->grid_j = grid_j;
-    this->border_elements=border_elements;
-    this->boundary_tree_lroot = new std::unordered_map<uint64_t, boundary_node*>();
-    this->border_lr = -1;
-}*/
+
 
 boundary_tree::~boundary_tree(){
+    // delete borders
     for(uint32_t i=0;i < this->border_elements->size(); i++){
         // for(auto e: *this->border_elements->at(i)){
             // delete e;
@@ -100,12 +92,13 @@ boundary_tree::~boundary_tree(){
         delete this->border_elements->at(i);
     }
     delete this->border_elements;
-    for(auto n: *(this->boundary_tree_lroot)){
-/*         if(delete_tree_nodes){
-            delete n.second;
-        } */
-        this->remove_bnode_lroot_tree(n.second->ptr_node->global_idx);
+    delete this->tile_borders;
 
+    // delete tree 
+    for(auto n: *this->boundary_tree_lroot){
+        if(this->delete_nodes){
+             delete n.second;
+        }
     }
     delete this->boundary_tree_lroot;
 }
@@ -241,72 +234,6 @@ boundary_node *boundary_tree::get_border_node(int64_t global_idx){
         return this->boundary_tree_lroot->at(global_idx);
     return NULL;
 }
-
-
-/*
-boundary_node *boundary_tree::get_bnode_levelroot(int64_t global_idx){
-    boundary_node *n, *lr, *ant_lr;
-    n = this->get_border_node(global_idx);
-    
-    //std::cout << "levelroot of:" << global_idx << "\n";
-    if(n == NULL){
-        return NULL;
-    }
-    // if(verbose) std::cout << "node:\n" << n->to_string() << " line: "<< __LINE__ << "\n";
-    if(n->boundary_parent == NO_BOUNDARY_PARENT && n->border_lr == NO_BORDER_LEVELROOT){
-        return n;
-    }
-    lr = this->get_border_node(n->boundary_parent);
-    if(lr == NULL){
-        lr = this->get_border_node(n->border_lr);
-        std::cout << "par:" << n->boundary_parent << "par:" << n->boundary_parent << "\n";
-        std::cout << this->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n");
-        std::cout << "par:" << n->boundary_parent << "\n";
-        std::cout << "n:" <<n->to_string() << "\n"; 
-        // return lr;
-    }
-    if(lr != NULL && lr->ptr_node->gval != n->ptr_node->gval){
-        return n;
-    }
-    if(verbose && lr) std::cout << "node:\n" << lr->to_string() << " line: "<< __LINE__ << "\n";
-    while(lr != NULL && lr->ptr_node->gval == n->ptr_node->gval){
-        if(lr != NULL){
-            ant_lr = lr;
-        }
-        lr = this->get_border_node(lr->boundary_parent);
-        if(lr == NULL){
-            lr = this->get_border_node(lr->border_lr);
-        }
-        // if(verbose) if(lr!=NULL) std::cout << "node:\n" << lr->to_string() << " line: "<< __LINE__ << "\n";
-    }
-    return ant_lr;
-
-
-}
-
-*/
-/* 
-boundary_node *boundary_tree::get_bnode_levelroot(int64_t global_idx){
-    boundary_node *n, *lr, *ant;
-    n = this->get_border_node(global_idx);
-    //std::cout << n->to_string() <<"\n";
-    if(n == NULL){
-        return NULL;
-    }
-    // if(n->border_lr == NO_BORDER_LEVELROOT){
-    //     lr = this->get_border_node(n->boundary_parent);
-    // }else{
-    //     lr = this->get_border_node(n->border_lr);
-    // }
-    lr = this->get_border_node(n->boundary_parent);
-
-    if(lr == NULL || n->ptr_node->gval != lr->ptr_node->gval){
-        return n;
-    }else{
-        return this->get_bnode_levelroot(lr->ptr_node->global_idx);
-    }
-}
- */
 
 
 boundary_node *boundary_tree::get_bnode_levelroot(int64_t global_idx){
@@ -755,6 +682,7 @@ maxtree_node *boundary_tree::up_tree_filter(uint64_t gidx, Tattribute lambda){
     if(glr->boundary_parent != NO_BOUNDARY_PARENT){
         return this->up_tree_filter(glr->boundary_parent, lambda);
     }else{
+        glr->ptr_node->set_label(glr->ptr_node->gval);
         return glr->ptr_node;
     }
 
@@ -1308,27 +1236,6 @@ boundary_tree *boundary_tree::merge(boundary_tree *t, enum merge_directions d, u
     //ret_tree = this->get_copy(true);
     ret_tree = new boundary_tree(this->h, this->w, this->grid_i, this->grid_j);
     merge_tree = t;
-   /*  for(int i=0; i<NamesBordersVector.size(); i++){
-        // if(verbose) std::cout << NamesBordersVector.at(i) << "\n";
-        if(merge_tree->tile_borders->at(i)){
-            std::vector<boundary_node *> *border = merge_tree->border_elements->at(i);
-            for(auto e: *border){
-                // if(verbose) std::cout << e->to_string() << "\n";
-                if(e->boundary_parent == NO_BOUNDARY_PARENT){
-                    e_parent = merge_tree->get_border_node(e->ptr_node->global_idx);    
-                }else{
-                    e_parent = merge_tree->get_border_node(e->boundary_parent);
-                }
-                if(e_parent!=NULL){
-                    // if(verbose) std::cout << e_parent->ptr_node->global_idx << " being added\n";
-                    ret_tree->add_lroot_tree(e_parent,true,true);
-                    // if(verbose) std::cout << e->ptr_node->global_idx << " and parents added\n";
-                }
-                
-            }
-            
-        }
-    } */
     if(d == MERGE_HORIZONTAL){  // prepare data to merge borders placed on horizontal (this tree bottom border and merged tree top border)
         if(this->grid_i < merge_tree->grid_i){
             

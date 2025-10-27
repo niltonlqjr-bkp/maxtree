@@ -8,6 +8,8 @@ boundary_tree_dir=../include
 utils_dir=../include
 heap_dir=../include
 
+tasks_dir=.
+
 
 vips_args = `pkg-config vips-cpp --cflags --libs`
 
@@ -48,13 +50,14 @@ figures_flags ?=
 
 all: merge 
 
-merge: base
+merge: base tasks.o
 	mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_merge} \
 		${utils_dir}/utils.o \
 	 	${maxtree_node_dir}/maxtree_node.o \
 		${maxtree_dir}/maxtree.o \
 		${boundary_tree_dir}/boundary_tree.o \
+		${tasks_dir}/tasks.o \
 		-I${maxtree_node_dir} -I${utils_dir} -I${maxtree_dir} -I${heap_dir} \
 		${vips_args} -o ${dest_merge}
 
@@ -98,6 +101,9 @@ maxtree.o: ${maxtree_dir}/maxtree.cpp ${maxtree_dir}/maxtree.hpp
 
 maxtree_node.o: ${maxtree_node_dir}/maxtree_node.cpp ${maxtree_node_dir}/maxtree_node.hpp 
 	g++ ${OBJ_CPP_FLAGS} ${maxtree_node_dir}/maxtree_node.cpp -I${maxtree_node_dir} -o ${maxtree_node_dir}/maxtree_node.o
+
+tasks.o: ${tasks_dir}/tasks.cpp ${tasks_dir}/tasks.hpp
+	g++ ${OBJ_CPP_FLAGS} ${tasks_dir}/tasks.cpp -I${tasks_dir} -I${maxtree_dir} ${vips_args} -o ${tasks_dir}/tasks.o
 
 utils.o: ${utils_dir}/utils.cpp ${utils_dir}/utils.hpp
 	g++ ${OBJ_CPP_FLAGS} ${utils_dir}/utils.cpp ${vips_args} -I${utils_dir} -o ${utils_dir}/utils.o

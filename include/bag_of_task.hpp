@@ -1,4 +1,5 @@
 #include <cinttypes>
+#include <condition_variable>
 
 #ifndef __BAG_OF_TASK_HPP__
 #define __BAG_OF_TASK_HPP__

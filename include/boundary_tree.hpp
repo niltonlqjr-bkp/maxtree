@@ -62,8 +62,9 @@ class boundary_tree{
         uint32_t w;
         uint32_t grid_i;
         uint32_t grid_j;
+        bool delete_nodes;
         
-        boundary_tree(uint32_t h, uint32_t w, uint32_t grid_i, uint32_t grid_j);
+        boundary_tree(uint32_t h, uint32_t w, uint32_t grid_i, uint32_t grid_j, bool dn=true);
         
         /*boundary_tree(std::vector<std::unordered_map<uint64_t, boundary_node *>*> *border_elements, 
              uint32_t h, uint32_t w, uint32_t grid_i, uint32_t grid_j);*/
