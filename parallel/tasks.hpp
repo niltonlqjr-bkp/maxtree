@@ -5,17 +5,25 @@
 #ifndef __TASKS_HPP__
 #define __TASKS_HPP__
 // class that defines the procedures to compute a tile maxtree
+
+
 class input_tile{
-    private:
-        maxtree *tile;
-        uint32_t reg_left, reg_top, tile_columns, tile_lines;
     public:
-        // the constructor receive the number of lines and columns in grid
+        uint32_t reg_left, reg_top, i, j;
+        uint32_t tile_columns, tile_lines;
+        uint32_t noborder_rt, noborder_rl;
+        maxtree *tile;
+        input_tile(uint32_t i, uint32_t j, uint32_t nb_rt, uint32_t nb_rl);
+        uint64_t size();
+        // this function receive the number of lines and columns in grid
         // and the i, j position of the tile that should be read. 
-        input_tile(vips::VImage *img, uint32_t glines, 
-                   uint32_t gcolumns, uint32_t i, uint32_t j);
+        void prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns);
         void read_tile(vips::VImage *img);
+        
 
 };
+ bool operator<( input_tile &l,  input_tile &r);
+ bool operator>( input_tile &l,  input_tile &r);
+ bool operator==( input_tile &l,  input_tile &r);
 
 #endif

@@ -6,6 +6,10 @@
 #include <tuple>
 #include <string>
 #include <ostream>
+#include <thread>
+#include <mutex>
+
+
 #include <sysexits.h>
 
 #include "maxtree.hpp"
@@ -20,7 +24,7 @@
 using namespace vips;
 bool print_only_trees;
 bool verbose;
-
+std::mutex *vec_mutex;
 
 void read_config(char conf_name[], 
                  std::string &out_name, std::string &out_ext,
@@ -85,11 +89,25 @@ void read_config(char conf_name[],
     
 }
 
+void worker_input_prepare(std::vector<input_tile*> &bag_in, uint64_t &n, bag_of_tasks<input_tile*> &bag,
+                          vips::VImage *img, uint32_t glines, uint32_t gcolumns){
+    input_tile *t;
+        
+    while(!bag_in.empty()){
+        vec_mutex->lock();
+        t=bag_in.back();
+        bag_in.pop_back();
+        vec_mutex->unlock();
+        t->prepare(img, glines, gcolumns);
+    }
+    t->tile->to_string();
+}
 
 
 int main(int argc, char *argv[]){
     vips::VImage *in;
     maxtree *t;
+    input_tile *tile;
     std::string out_name, out_ext;
     uint32_t glines, gcolumns;
     uint8_t pixel_connection;
@@ -98,7 +116,9 @@ int main(int argc, char *argv[]){
 
     uint32_t num_th = 4;
 
-    bag_of_tasks<input_tile*> bag_in;
+    vec_mutex = new std::mutex();
+
+    std::vector<input_tile*> bag_in;
 
     std::cout << "argc: " << argc << " argv:" ;
     for(int i=0;i<argc;i++){
@@ -120,17 +140,17 @@ int main(int argc, char *argv[]){
                 VImage::option ()->set ("access", VIPS_ACCESS_SEQUENTIAL)
             )
         );
-
+    // std::thread *t=new std::thread(worker_input_prepare,)
     read_config(argv[2], out_name, out_ext, glines, gcolumns, lambda, pixel_connection, colored);
     std::cout << "start\n";
     uint32_t noborder_rt=0, noborder_rl, lines_inc, columns_inc;
     for(uint32_t i=0; i<glines; i++){
-        noborder_rl=0;
+        noborder_rl = 0;
         for(uint32_t j=0; j<gcolumns; j++){
-            bag_in.insert_task(new input_tile(in, glines, gcolumns, i ,j));
+            bag_in.push_back(new input_tile(i ,j, noborder_rt, noborder_rl));
         }
-
     }
+
 
 
 }

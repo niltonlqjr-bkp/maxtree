@@ -1,8 +1,36 @@
 #include "tasks.hpp"
 
-input_tile::input_tile(vips::VImage *img, uint32_t glines, 
-                       uint32_t gcolumns, uint32_t i, uint32_t j){
+ bool operator<(input_tile &l, input_tile &r){
+    return l.size() < r.size();
+}
 
+ bool operator>( input_tile &l, input_tile &r){
+    return l.size() > r.size();
+}
+
+ bool operator==( input_tile &l,  input_tile &r){
+    return l.size() == r.size();
+}
+
+input_tile::input_tile(uint32_t i, uint32_t j, uint32_t nb_rt, uint32_t nb_rl){
+    this->i = i;
+    this->j = j;
+    this->tile_columns = 0;
+    this->tile_lines = 0;
+    this->reg_left = 0;
+    this->reg_top = 0;
+    this->noborder_rt = nb_rt;
+    this->noborder_rl = nb_rl;
+}
+
+uint64_t input_tile::size(){
+    return this->tile_columns * this->tile_lines;
+}
+
+
+
+void input_tile::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns){
+                         
     uint32_t h,w;
     h=img->height();
     w=img->width();
@@ -16,13 +44,13 @@ input_tile::input_tile(vips::VImage *img, uint32_t glines,
 
     bool left, top, right, bottom;
     // uint32_t x = 0;
-    uint32_t noborder_rt=0, noborder_rl, lines_inc, columns_inc; // original tiles (without borders) size variables
+    uint32_t lines_inc, columns_inc; // original tiles (without borders) size variables
     //uint32_t reg_top, reg_left, tile_lines, tile_columns; // tiles used by algorithm (with border) size variables
 
 
     std::vector<bool> borders(4,false);
     
-    lines_inc = i < num_h_ceil ? h_trunc +1 : h_trunc;
+    lines_inc = this->i < num_h_ceil ? h_trunc +1 : h_trunc;
 
     // check which borders the tile must have.
     this->tile_lines = lines_inc;
@@ -39,7 +67,7 @@ input_tile::input_tile(vips::VImage *img, uint32_t glines,
     noborder_rl=0;
     borders.at(LEFT_BORDER) = false;
     borders.at(RIGHT_BORDER) = false;
-    columns_inc = j < num_w_ceil ? w_trunc+1 : w_trunc;
+    columns_inc = this->j < num_w_ceil ? w_trunc+1 : w_trunc;
     this->tile_columns = columns_inc;
     this->reg_left = noborder_rl;
     if(noborder_rl > 0){//check if there is a left border
@@ -53,7 +81,7 @@ input_tile::input_tile(vips::VImage *img, uint32_t glines,
     }
 
     // create the class for tile representation
-    this->tile = new maxtree(borders, this->tile_lines, this->tile_columns, i, j);
+    this->tile = new maxtree(borders, this->tile_lines, this->tile_columns, this->i, this->j);
 
     // prepare only the region of interest in this task to be read;
     
