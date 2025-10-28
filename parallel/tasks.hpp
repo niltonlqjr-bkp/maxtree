@@ -14,6 +14,7 @@ class input_tile{
         uint32_t noborder_rt, noborder_rl;
         maxtree *tile;
         input_tile(uint32_t i, uint32_t j, uint32_t nb_rt, uint32_t nb_rl);
+        input_tile(uint32_t i, uint32_t j);
         uint64_t size();
         // this function receive the number of lines and columns in grid
         // and the i, j position of the tile that should be read. 

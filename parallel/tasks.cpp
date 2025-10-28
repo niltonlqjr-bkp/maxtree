@@ -23,6 +23,17 @@ input_tile::input_tile(uint32_t i, uint32_t j, uint32_t nb_rt, uint32_t nb_rl){
     this->noborder_rl = nb_rl;
 }
 
+input_tile::input_tile(uint32_t i, uint32_t j){
+    this->i = i;
+    this->j = j;
+    this->tile_columns = 0;
+    this->tile_lines = 0;
+    this->reg_left = 0;
+    this->reg_top = 0;
+    this->noborder_rt = 0;
+    this->noborder_rl = 0;
+}
+
 uint64_t input_tile::size(){
     return this->tile_columns * this->tile_lines;
 }
@@ -47,6 +58,19 @@ void input_tile::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns){
     uint32_t lines_inc, columns_inc; // original tiles (without borders) size variables
     //uint32_t reg_top, reg_left, tile_lines, tile_columns; // tiles used by algorithm (with border) size variables
 
+    if(this->i < num_h_ceil){
+        noborder_rt = this->i * (h_trunc+1);
+    }else{
+        noborder_rt = num_h_ceil + this->i * h_trunc;
+    }
+
+    if(this->j < num_w_ceil){
+        noborder_rl= this->j * (w_trunc+1);
+    }else{
+        noborder_rl = num_w_ceil + this->j * w_trunc;
+    }
+
+    std::cout << this->i << ", " << this->j << " real top:" << noborder_rt << " real left: " << noborder_rl << "\n";
 
     std::vector<bool> borders(4,false);
     
@@ -64,7 +88,7 @@ void input_tile::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns){
         this->tile_lines++;
         borders.at(BOTTOM_BORDER) = true;
     }
-    noborder_rl=0;
+    
     borders.at(LEFT_BORDER) = false;
     borders.at(RIGHT_BORDER) = false;
     columns_inc = this->j < num_w_ceil ? w_trunc+1 : w_trunc;
