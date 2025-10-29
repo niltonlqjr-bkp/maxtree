@@ -91,22 +91,15 @@ grow: base
 		-I${maxtree_node_dir} -I${utils_dir} -I${maxtree_dir} -I${heap_dir} \
 		${vips_args} -o ${dest_grow}
 
-base: maxtree_node.o maxtree.o utils.o boundary_tree.o
-
-boundary_tree.o: ${boundary_tree_dir}/boundary_tree.cpp ${boundary_tree_dir}/boundary_tree.hpp
-	g++ ${OBJ_CPP_FLAGS} ${boundary_tree_dir}/boundary_tree.cpp -I${boundary_tree_dir} ${vips_args} -o ${boundary_tree_dir}/boundary_tree.o
-
-maxtree.o: ${maxtree_dir}/maxtree.cpp ${maxtree_dir}/maxtree.hpp
-	g++ ${OBJ_CPP_FLAGS} ${maxtree_dir}/maxtree.cpp -I${maxtree_dir} ${vips_args} -o ${maxtree_dir}/maxtree.o
-
-maxtree_node.o: ${maxtree_node_dir}/maxtree_node.cpp ${maxtree_node_dir}/maxtree_node.hpp 
-	g++ ${OBJ_CPP_FLAGS} ${maxtree_node_dir}/maxtree_node.cpp -I${maxtree_node_dir} -o ${maxtree_node_dir}/maxtree_node.o
 
 tasks.o: ${tasks_dir}/tasks.cpp ${tasks_dir}/tasks.hpp
 	g++ ${OBJ_CPP_FLAGS} ${tasks_dir}/tasks.cpp -I${tasks_dir} -I${maxtree_dir} ${vips_args} -o ${tasks_dir}/tasks.o
 
-utils.o: ${utils_dir}/utils.cpp ${utils_dir}/utils.hpp
-	g++ ${OBJ_CPP_FLAGS} ${utils_dir}/utils.cpp ${vips_args} -I${utils_dir} -o ${utils_dir}/utils.o
+base: 
+	@make -C ${maxtree_node_dir}
+	@make -C ${maxtree_dir}
+	@make -C ${boundary_tree_dir}
+	@make -C ${utils_dir}
 
 test: merge
 	@mkdir -p ${output_text_dir} 
@@ -119,6 +112,14 @@ figures: merge
 
 test_figures: test figures
 
+clean:
+	@make -C ${maxtree_node_dir} clean
+	@make -C ${maxtree_dir} clean
+	@make -C ${boundary_tree_dir} clean
+	@make -C ${utils_dir} clean
+	rm ${dest_merge} || true
+	rm ${dest_divide} || true
+	rm ${dest_grow} || true
 
 #heap.o:
 #	g++ ${OBJ_CPP_FLAGS} ${heap_dir}/heap.cpp -I${heap_dir} -o ${heap_dir}/heap.o
