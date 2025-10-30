@@ -19,6 +19,7 @@ class bag_of_tasks{
     public:
         bag_of_tasks(bool start_running = true);
         ~bag_of_tasks();
+        void start();
         void insert_task(Task t);
         int position_of(int priority);
         bool is_running();
@@ -27,6 +28,7 @@ class bag_of_tasks{
         void wakeup_workers(bool lock = true);
         void notify_end();
         int num_waiting();
+        int get_num_task();
         void print();
         bool empty();
 };

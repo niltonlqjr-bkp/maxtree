@@ -1,18 +1,18 @@
 #include "tasks.hpp"
 
- bool operator<(input_tile &l, input_tile &r){
+ bool operator<(comparable_task &l, comparable_task &r){
     return l.size() < r.size();
 }
 
- bool operator>( input_tile &l, input_tile &r){
+ bool operator>(comparable_task &l, comparable_task &r){
     return l.size() > r.size();
 }
 
- bool operator==( input_tile &l,  input_tile &r){
+ bool operator==(comparable_task &l,  comparable_task &r){
     return l.size() == r.size();
 }
-
-input_tile::input_tile(uint32_t i, uint32_t j, uint32_t nb_rt, uint32_t nb_rl){
+// Input tile task
+input_tile_task::input_tile_task(uint32_t i, uint32_t j, uint32_t nb_rt, uint32_t nb_rl){
     this->i = i;
     this->j = j;
     this->tile_columns = 0;
@@ -23,7 +23,7 @@ input_tile::input_tile(uint32_t i, uint32_t j, uint32_t nb_rt, uint32_t nb_rl){
     this->noborder_rl = nb_rl;
 }
 
-input_tile::input_tile(uint32_t i, uint32_t j){
+input_tile_task::input_tile_task(uint32_t i, uint32_t j){
     this->i = i;
     this->j = j;
     this->tile_columns = 0;
@@ -34,11 +34,11 @@ input_tile::input_tile(uint32_t i, uint32_t j){
     this->noborder_rl = 0;
 }
 
-uint64_t input_tile::size(){
+uint64_t input_tile_task::size(){
     return this->tile_columns * this->tile_lines;
 }
 
-void input_tile::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns){
+void input_tile_task::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns){
                          
     uint32_t h,w;
     h=img->height();
@@ -109,7 +109,7 @@ void input_tile::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns){
     
 }
 
-void input_tile::read_tile(vips::VImage *img){
+void input_tile_task::read_tile(vips::VImage *img){
     uint32_t h,w;
     h=img->height();
     w=img->width();
@@ -120,4 +120,34 @@ void input_tile::read_tile(vips::VImage *img){
     this->tile->fill_from_VRegion(reg, this->reg_top, this->reg_left, h, w);
     vips_region_invalidate(reg.get_region());
 
+}
+
+
+
+// maxtree_task class
+
+/* maxtree_task::maxtree_task(input_tile_task *t, bool copy){
+    if(copy){
+        std::cerr << "not ready yet\n creating a maxtreetask with pointer instead of a copy\n";
+        this->mt = t->tile;
+    }else{
+        this->mt = t->tile;
+    }
+    this->mt->compute_sequential_recursive();
+} */
+
+uint64_t maxtree_task::size(){
+    return this->mt->get_size();
+}
+
+
+//boundary_task class
+
+boundary_tree_task::boundary_tree_task(maxtree_task *t){
+    this->bt = t->mt->get_boundary_tree();
+}
+
+
+uint64_t boundary_tree_task::size(){
+    return this->bt->boundary_tree_lroot->size();
 }

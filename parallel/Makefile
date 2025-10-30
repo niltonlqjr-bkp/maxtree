@@ -48,9 +48,9 @@ output_verbose = ${output_text_dir}/verbose_${l}l${c}c.txt
 
 figures_flags ?= 
 
-all: merge 
+all: ${dest_merge} 
 
-merge: base tasks.o
+${dest_merge}:base tasks.o
 	mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_merge} \
 		${utils_dir}/utils.o \
@@ -61,7 +61,7 @@ merge: base tasks.o
 		-I${maxtree_node_dir} -I${utils_dir} -I${maxtree_dir} -I${heap_dir} \
 		${vips_args} -o ${dest_merge}
 
-divide: base
+${dest_divide}: base
 	mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_divide} \
 		${utils_dir}/utils.o \
@@ -81,7 +81,7 @@ vips_region: base
 		-I${maxtree_node_dir} -I${utils_dir} -I${maxtree_dir} -I${heap_dir} \
 		${vips_args} -o teste_region
 
-grow: base
+${dest_grow}: base
 	mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_grow} \
 		${utils_dir}/utils.o \

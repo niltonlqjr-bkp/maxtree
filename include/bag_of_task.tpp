@@ -11,6 +11,10 @@ template <class Task>
 bag_of_tasks<Task>::~bag_of_tasks(){
     delete this->tasks;
 }
+template <class Task>
+void bag_of_tasks<Task>::start(){
+    this->running = true;
+}
 
 template <class Task>
 void bag_of_tasks<Task>::insert_task(Task t){
@@ -84,6 +88,11 @@ void bag_of_tasks<Task>::notify_end(){
 template <class Task>
 int bag_of_tasks<Task>::num_waiting(){
     return this->waiting;
+}
+
+template <class Task>
+int bag_of_tasks<Task>::get_num_task(){
+    return this->num_task;
 }
 
 template <class Task>
