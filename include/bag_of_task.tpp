@@ -1,10 +1,10 @@
 
 
 template <class Task>
-bag_of_tasks<Task>::bag_of_tasks(){
+bag_of_tasks<Task>::bag_of_tasks(bool start_running){
     this->tasks = new max_heap<Task>();
     this->num_task = 0;
-    this->running = true;
+    this->running = start_running;
     this->waiting = 0;
 }
 template <class Task>

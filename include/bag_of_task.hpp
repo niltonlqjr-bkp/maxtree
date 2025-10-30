@@ -17,7 +17,7 @@ class bag_of_tasks{
         bool running;
         int waiting;
     public:
-        bag_of_tasks();
+        bag_of_tasks(bool start_running = true);
         ~bag_of_tasks();
         void insert_task(Task t);
         int position_of(int priority);

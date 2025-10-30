@@ -38,8 +38,6 @@ uint64_t input_tile::size(){
     return this->tile_columns * this->tile_lines;
 }
 
-
-
 void input_tile::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns){
                          
     uint32_t h,w;

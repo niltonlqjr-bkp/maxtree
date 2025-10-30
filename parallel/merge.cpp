@@ -134,9 +134,18 @@ void worker_input_prepare(std::deque<input_tile*> &bag_in, bag_of_tasks<input_ti
             vec_mutex.unlock();
             if(got_task){
                 t->prepare(img, glines, gcolumns);
-                t->read_tile(img);
-                t->tile->to_string();
             }
+        }
+    }
+}
+
+void worker_read_tile(vips::VImage *img, bag_of_tasks<input_tile*> &bag_prepared){
+    bool got_task;
+    input_tile *t;
+    while(bag_prepared.is_running()){
+        got_task=bag_prepared.get_task(t);
+        if(got_task){
+            t->read_tile(img);
         }
     }
 }
@@ -200,7 +209,20 @@ int main(int argc, char *argv[]){
     for(auto th: threads){
         th->join();
     }
-
-
-
+    std::cout << "wait end\n";
+    while(true){
+        bag_prepare.wait_empty();
+        if(bag_prepare.is_running() && bag_prepare.num_waiting() == num_th){
+            bag_prepare.notify_end();
+            std::cout << "end notified\n";
+            break;
+        }
+    }
+    threads.clear();
+    for(uint32_t i=0; i<num_th; i++){
+        threads.push_back(new std::thread(worker_read_tile, in, std::ref(bag_prepare)));
+    }
+    for(auto th: threads){
+        th->join();
+    }
 }
