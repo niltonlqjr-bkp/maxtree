@@ -117,7 +117,7 @@ void input_tile_task::read_tile(vips::VImage *img){
     vips::VRegion reg = img->region(this->reg_left, this->reg_top, this->tile_columns, this->tile_lines);
     reg.prepare(this->reg_left, this->reg_top, this->tile_columns, this->tile_lines);
     
-    this->tile->fill_from_VRegion(reg, this->reg_top, this->reg_left, h, w);
+    this->tile->fill_from_VRegion(reg, this->reg_top, this->reg_left, this->tile_lines, this->tile_columns);;
     vips_region_invalidate(reg.get_region());
 
 }

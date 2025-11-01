@@ -62,7 +62,7 @@ void wait_empty(bag_of_tasks<T> &b, uint64_t num_th){
 
 void queue_fill(std::deque<input_tile_task*> &queue_in, uint32_t glines, uint32_t gcolumns){
     queue_in.push_back(new input_tile_task(0,0));
-    start = true;
+    // start = true;
     c.notify_all();
     for(uint32_t j=1; j<gcolumns; j++){
         vec_mutex.lock();
@@ -82,7 +82,7 @@ void queue_fill(std::deque<input_tile_task*> &queue_in, uint32_t glines, uint32_
 void read_config(char conf_name[], 
                  std::string &out_name, std::string &out_ext,
                  uint32_t &glines, uint32_t &gcolumns, Tattribute lambda,
-                 uint8_t &pixel_connection, bool colored){
+                 uint8_t &pixel_connection, bool colored, uint32_t num_threads){
     /*
         Reading configuration file
     */
@@ -135,6 +135,11 @@ void read_config(char conf_name[],
 
     glines = std::stoi(configs->at("glines"));
     gcolumns = std::stoi(configs->at("gcolumns"));
+    num_threads = std::thread::hardware_concurrency();
+    if(configs->find("threads") != configs->end()){
+        num_threads = std::stoi(configs->at("threads"));
+    }
+    
 
     std::cout << "configurations:\n";
     print_unordered_map(configs);
@@ -149,10 +154,7 @@ void worker_input_prepare(std::deque<input_tile_task*> &task_queue, bag_of_tasks
 
     input_tile_task *t;
     bool got_task;
-    if(!start){
-        std::unique_lock<std::mutex> ul(mutex_start);
-        c.wait(ul);
-    }
+
     while(!task_queue.empty()){
         got_task = false;
         if(!task_queue.empty()){
@@ -166,23 +168,27 @@ void worker_input_prepare(std::deque<input_tile_task*> &task_queue, bag_of_tasks
             vec_mutex.unlock();
             if(got_task){
                 t->prepare(img, glines, gcolumns);
-                std::ostringstream os("");
+                /* std::ostringstream os("");
                 os << t->tile->h << ", " << t->tile->w << "\n";
                 std::string s = os.str();
-                std::cout << s;
+                std::cout << s; */
                 bag_out.insert_task(t);
             }
         }
     }
 }
 
-void worker_read_tile(vips::VImage *img, bag_of_tasks<input_tile_task*> &bag_prepared, bag_of_tasks<input_tile_task *> &full_tiles){
+void worker_read_tile(bag_of_tasks<input_tile_task*> &bag_prepared, bag_of_tasks<input_tile_task *> &full_tiles, vips::VImage *img){
     bool got_task;
     input_tile_task *t;
     while(bag_prepared.is_running()){
         got_task=bag_prepared.get_task(t);
         if(got_task){
-            std::cout << "worker got task " << t->i << ", " << t->j << " to read tile\n";
+            std::ostringstream os("");
+            /* os << "worker got task " << t->i << ", " << t->j << " to read tile";
+            os << ": " << t->reg_top << ", " << t->reg_left <<  "..." <<  t->reg_top+t->tile_lines << ", " << t->reg_left+t->tile_columns<<"\n";
+            std::string s = os.str();
+            std::cout << s; */
             t->read_tile(img);
             full_tiles.insert_task(t);
         }
@@ -197,7 +203,10 @@ void worker_maxtree_calc(bag_of_tasks<input_tile_task *> &full_tiles, bag_of_tas
     while(full_tiles.is_running()){
         got_task=full_tiles.get_task(t);
         if(got_task){
-            std::cout << "worker got task " << t->i << ", " << t->j << " to calculate maxtree\n";
+            /* std::ostringstream os("");
+            os << "worker got task " << t->i << ", " << t->j << " to calculate maxtree\n";
+            std::string s = os.str();
+            std::cout << s; */
             mt = new maxtree_task(t);
             max_trees.insert_task(mt);
         }
@@ -213,7 +222,7 @@ int main(int argc, char *argv[]){
     uint8_t pixel_connection;
     bool colored;
     Tattribute lambda=2;
-    uint32_t num_th = 4;
+    uint32_t num_th;
     
     std::deque<input_tile_task*> queue_in;
     bag_of_tasks<input_tile_task*> bag_prepare, bag_tiles;
@@ -221,16 +230,17 @@ int main(int argc, char *argv[]){
     std::vector<std::thread *> threads, threads_prep, threads_mt;
 
     verify_args(argc, argv);
-    read_config(argv[2], out_name, out_ext, glines, gcolumns, lambda, pixel_connection, colored);
+    read_config(argv[2], out_name, out_ext, glines, gcolumns, lambda, pixel_connection, colored, num_th);
 
 
     if (VIPS_INIT(argv[0])) { 
         vips_error_exit (NULL);
     } 
-
+    // SEE VIPS_CONCURRENCY
+    // check https://github.com/libvips/libvips/discussions/4063 for improvements on read
     in = new vips::VImage(
                 vips::VImage::new_from_file(argv[1],
-                VImage::option ()->set ("access", VIPS_ACCESS_SEQUENTIAL)
+                VImage::option ()->set ("access", VIPS_ACCESS_RANDOM)
             )
         );
     std::cout << "start\n";
@@ -238,21 +248,21 @@ int main(int argc, char *argv[]){
     
     // uint32_t noborder_rt=0, noborder_rl, lines_inc, columns_inc;
     
+    queue_fill(queue_in, glines, gcolumns);
+    
+    start = true;
     for(uint32_t i=0; i<num_th; i++){
         threads.push_back(new std::thread(worker_input_prepare, std::ref(queue_in), std::ref(bag_prepare), in, glines, gcolumns));
         // threads.push_back(new std::thread(worker_input_prepare, in, glines, gcolumns));
     }
-
-    queue_fill(queue_in, glines, gcolumns);
-
     for(auto th: threads){
         th->join();
     }
-
+    
     std::cout << "bag_in total tasks:" << queue_in.size() << "\n";
     bag_prepare.start();
     for(uint32_t i=0; i<num_th; i++){
-        threads_prep.push_back(new std::thread(worker_read_tile, in, std::ref(bag_prepare), std::ref(bag_tiles) ));
+        threads_prep.push_back(new std::thread(worker_read_tile, std::ref(bag_prepare), std::ref(bag_tiles), in ) );
     }
     
     wait_empty<input_tile_task *>(bag_prepare, num_th);

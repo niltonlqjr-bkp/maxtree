@@ -59,20 +59,11 @@ wilkinson: base
 		${boundary_tree_dir}/boundary_tree.o ${maxtree_dir}/maxtree.o \
     	-I${maxtree_node_dir}  -I${maxtree_dir} -I${utils_dir} ${vips_args} -o ${dest_nonrec_wilk}
 
-
-base: maxtree_node.o maxtree.o utils.o boundary_tree.o
-
-boundary_tree.o:
-	g++ ${OBJ_CPP_FLAGS} ${boundary_tree_dir}/boundary_tree.cpp -I${boundary_tree_dir} ${vips_args} -o ${boundary_tree_dir}/boundary_tree.o
-
-maxtree_node.o: #${maxtree_node_dir}/maxtree_node.cpp ${maxtree_node_dir}/maxtree_node.hpp 
-	g++ ${OBJ_CPP_FLAGS} ${maxtree_node_dir}/maxtree_node.cpp -I${maxtree_node_dir} -o ${maxtree_node_dir}/maxtree_node.o
-
-maxtree.o:
-	g++ ${OBJ_CPP_FLAGS} ${maxtree_dir}/maxtree.cpp -I${maxtree_dir} ${vips_args} -o ${maxtree_dir}/maxtree.o
-
-utils.o:
-	g++ ${OBJ_CPP_FLAGS} ${utils_dir}/utils.cpp ${vips_args} -I${utils_dir} -o ${utils_dir}/utils.o
+base: 
+	@make -C ${maxtree_node_dir}
+	@make -C ${maxtree_dir}
+	@make -C ${boundary_tree_dir}
+	@make -C ${utils_dir}
 
 wilkinson_old: base
 	g++ ${OPT} wilk_bkp.cpp ${utils_dir}/utils.o ${maxtree_node_dir}/maxtree_node.o \
@@ -81,7 +72,11 @@ wilkinson_old: base
 
 
 clean:
-	${RM} exec/${non_rec_wilk_name} exec/${non_rec_name} exec/${rec_name} ${utils_dir}/*.o ${maxtree_node_dir}/*.o
+	@make -C ${maxtree_node_dir} clean
+	@make -C ${maxtree_dir} clean
+	@make -C ${boundary_tree_dir} clean
+	@make -C ${utils_dir} clean
+	${RM} exec/${non_rec_wilk_name} exec/${non_rec_name} exec/${rec_name}
 
 tests: all
 	for input_test in ${test_files} ; do \

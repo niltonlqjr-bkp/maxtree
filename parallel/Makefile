@@ -16,6 +16,7 @@ vips_args = `pkg-config vips-cpp --cflags --libs`
 ifeq (${TYPE},R)
 	OBJ_CPP_FLAGS=-c 
 	EXE_CPP_FLAGS=-pthread
+	OPT ?= -O2
 else 
 	OBJ_CPP_FLAGS=-g -c
 	EXE_CPP_FLAGS=-g -pthread
@@ -32,6 +33,8 @@ source_divide=${divide_name}.cpp
 dest_grow = exec/${grow_name}
 dest_divide = exec/${divide_name}
 dest_merge = exec/${merge_name}
+
+
 
 
 l ?= 3

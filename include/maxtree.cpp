@@ -570,9 +570,9 @@ void maxtree::fill_from_VRegion(vips::VRegion &reg_in, uint32_t base_h, uint32_t
         noborder_w--;
     }
      
-/*     if(verbose){
-        std::cout << "filling: " << base_h << ", " << base_w << "..." << base_h+this->h << ", " << base_w+this->w <<"\n";
-    } */
+    // if(verbose){
+    //    std::cout << "filling: " << base_h << ", " << base_w << "..." << base_h+this->h << ", " << base_w+this->w <<"\n";
+    // } 
 
     
     for(int l = 0; l < this->h; l++){

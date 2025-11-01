@@ -8,12 +8,11 @@
 
 class comparable_task{
     public:
-
         virtual uint64_t size() = 0;
 };
 
 
-class input_tile_task: comparable_task{
+class input_tile_task: public comparable_task{
     public:
         uint32_t reg_left, reg_top, i, j;
         uint32_t tile_columns, tile_lines;
