@@ -51,7 +51,7 @@ figures_flags ?=
 all: ${dest_merge} 
 
 ${dest_merge}:base tasks.o
-	mkdir -p exec
+	@mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_merge} \
 		${utils_dir}/utils.o \
 	 	${maxtree_node_dir}/maxtree_node.o \
@@ -62,7 +62,7 @@ ${dest_merge}:base tasks.o
 		${vips_args} -o ${dest_merge}
 
 ${dest_divide}: base
-	mkdir -p exec
+	@mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_divide} \
 		${utils_dir}/utils.o \
 	 	${maxtree_node_dir}/maxtree_node.o \
@@ -72,7 +72,7 @@ ${dest_divide}: base
 		${vips_args} -o ${dest_divide}
 
 vips_region: base
-	mkdir -p exec
+	@mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} teste_region.cpp \
 		${utils_dir}/utils.o \
 	 	${maxtree_node_dir}/maxtree_node.o \
@@ -82,7 +82,7 @@ vips_region: base
 		${vips_args} -o teste_region
 
 ${dest_grow}: base
-	mkdir -p exec
+	@mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_grow} \
 		${utils_dir}/utils.o \
 	 	${maxtree_node_dir}/maxtree_node.o \

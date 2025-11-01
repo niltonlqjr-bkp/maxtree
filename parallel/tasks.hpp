@@ -8,23 +8,8 @@
 
 class comparable_task{
     public:
+
         virtual uint64_t size() = 0;
-};
-
-class maxtree_task: comparable_task{
-    public:
-        maxtree *mt;
-        // maxtree_task(input_tile_task *t, bool copy = false);
-        uint64_t size();
-};
-
-class boundary_tree_task: comparable_task{
-    public:
-        boundary_tree *bt;
-        boundary_tree_task(maxtree_task *t);
-        uint64_t size();
-        
-    
 };
 
 
@@ -44,6 +29,24 @@ class input_tile_task: comparable_task{
         
 
 };
+
+class maxtree_task: public comparable_task{
+    public:
+        maxtree *mt; 
+        maxtree_task(input_tile_task *t, bool copy = false);
+        uint64_t size();
+};
+
+class boundary_tree_task: public comparable_task{
+    public:
+        boundary_tree *bt;
+        boundary_tree_task(maxtree_task *t);
+        uint64_t size();
+        
+    
+};
+
+
 bool operator<(comparable_task &l, comparable_task &r);
 bool operator>(comparable_task &l, comparable_task &r);
 bool operator==(comparable_task &l, comparable_task &r);

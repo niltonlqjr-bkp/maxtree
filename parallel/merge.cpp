@@ -47,6 +47,38 @@ void verify_args(int argc, char *argv[]){
     }
 }
 
+template<typename T>
+void wait_empty(bag_of_tasks<T> &b, uint64_t num_th){
+    std::cout << "wait end\n";
+    while(true){
+        b.wait_empty();
+        if(b.is_running() && b.empty() && b.num_waiting() == num_th){
+            b.notify_end();
+            std::cout << "end notified\n";
+            break;
+        }
+    }
+}
+
+void queue_fill(std::deque<input_tile_task*> &queue_in, uint32_t glines, uint32_t gcolumns){
+    queue_in.push_back(new input_tile_task(0,0));
+    start = true;
+    c.notify_all();
+    for(uint32_t j=1; j<gcolumns; j++){
+        vec_mutex.lock();
+        queue_in.push_back(new input_tile_task(0 ,j));
+        vec_mutex.unlock();
+    }
+
+    for(uint32_t i=1; i<glines; i++){
+        for(uint32_t j=0; j<gcolumns; j++){
+            vec_mutex.lock();
+            queue_in.push_back(new input_tile_task(i ,j));
+            vec_mutex.unlock();
+        }
+    }
+}
+
 void read_config(char conf_name[], 
                  std::string &out_name, std::string &out_ext,
                  uint32_t &glines, uint32_t &gcolumns, Tattribute lambda,
@@ -114,7 +146,7 @@ void read_config(char conf_name[],
 
 void worker_input_prepare(std::deque<input_tile_task*> &task_queue, bag_of_tasks<input_tile_task*> &bag_out,
                           vips::VImage *img, uint32_t glines, uint32_t gcolumns){
-// void worker_input_prepare(vips::VImage *img, uint32_t glines, uint32_t gcolumns){
+
     input_tile_task *t;
     bool got_task;
     if(!start){
@@ -150,31 +182,24 @@ void worker_read_tile(vips::VImage *img, bag_of_tasks<input_tile_task*> &bag_pre
     while(bag_prepared.is_running()){
         got_task=bag_prepared.get_task(t);
         if(got_task){
+            std::cout << "worker got task " << t->i << ", " << t->j << " to read tile\n";
             t->read_tile(img);
             full_tiles.insert_task(t);
         }
     }
 }
 
-void worker_maxtree_calc(){
-
-}
-
-void queue_fill(std::deque<input_tile_task*> &queue_in, uint32_t glines, uint32_t gcolumns){
-    queue_in.push_back(new input_tile_task(0,0));
-    start = true;
-    c.notify_all();
-    for(uint32_t j=1; j<gcolumns; j++){
-        vec_mutex.lock();
-        queue_in.push_back(new input_tile_task(0 ,j));
-        vec_mutex.unlock();
-    }
-
-    for(uint32_t i=1; i<glines; i++){
-        for(uint32_t j=0; j<gcolumns; j++){
-            vec_mutex.lock();
-            queue_in.push_back(new input_tile_task(i ,j));
-            vec_mutex.unlock();
+//get a task from bag and compute maxtree of the tile of this task
+void worker_maxtree_calc(bag_of_tasks<input_tile_task *> &full_tiles, bag_of_tasks<maxtree_task *> &max_trees){
+    bool got_task;
+    input_tile_task *t;
+    maxtree_task *mt;
+    while(full_tiles.is_running()){
+        got_task=full_tiles.get_task(t);
+        if(got_task){
+            std::cout << "worker got task " << t->i << ", " << t->j << " to calculate maxtree\n";
+            mt = new maxtree_task(t);
+            max_trees.insert_task(mt);
         }
     }
 }
@@ -192,7 +217,8 @@ int main(int argc, char *argv[]){
     
     std::deque<input_tile_task*> queue_in;
     bag_of_tasks<input_tile_task*> bag_prepare, bag_tiles;
-    std::vector<std::thread *> threads, threads_prep;
+    bag_of_tasks<maxtree_task *> max_trees_tiles;
+    std::vector<std::thread *> threads, threads_prep, threads_mt;
 
     verify_args(argc, argv);
     read_config(argv[2], out_name, out_ext, glines, gcolumns, lambda, pixel_connection, colored);
@@ -210,7 +236,7 @@ int main(int argc, char *argv[]){
     std::cout << "start\n";
     start = false;
     
-    uint32_t noborder_rt=0, noborder_rl, lines_inc, columns_inc;
+    // uint32_t noborder_rt=0, noborder_rl, lines_inc, columns_inc;
     
     for(uint32_t i=0; i<num_th; i++){
         threads.push_back(new std::thread(worker_input_prepare, std::ref(queue_in), std::ref(bag_prepare), in, glines, gcolumns));
@@ -222,23 +248,42 @@ int main(int argc, char *argv[]){
     for(auto th: threads){
         th->join();
     }
-    bag_prepare.start();
-    std::cout << "bag_prepare total tasks:" << bag_prepare.get_num_task() << "\n";
+
     std::cout << "bag_in total tasks:" << queue_in.size() << "\n";
+    bag_prepare.start();
     for(uint32_t i=0; i<num_th; i++){
         threads_prep.push_back(new std::thread(worker_read_tile, in, std::ref(bag_prepare), std::ref(bag_tiles) ));
     }
-    std::cout << "wait end\n";
-    while(true){
-        bag_prepare.wait_empty();
-        if(bag_prepare.is_running() && bag_prepare.empty() && bag_prepare.num_waiting() == num_th){
-            bag_prepare.notify_end();
-            std::cout << "end notified\n";
-            break;
-        }
-    }
+    
+    wait_empty<input_tile_task *>(bag_prepare, num_th);
+    
     for(auto th: threads_prep){
         th->join();
     }
-    std::cout << "bag_prepare total tasks:" << bag_prepare.get_num_task() << "\n";
+    std::cout << "bag_tiles total tasks:" << bag_tiles.get_num_task() << "\n";
+
+    bag_tiles.start();
+    for(uint32_t i=0; i<num_th; i++){
+        threads_mt.push_back(new std::thread(worker_maxtree_calc, std::ref(bag_tiles), std::ref(max_trees_tiles)));
+    }
+    maxtree_task *mtt;
+    
+    wait_empty<input_tile_task *>(bag_tiles, num_th);
+
+    for(auto th: threads_mt){
+        th->join();
+    }
+    std::cout << "max_trees_tiles.get_num_task:" << max_trees_tiles.get_num_task() << "\n";
+    
+    int total_print=0;
+    max_trees_tiles.start();
+    while(total_print < glines*gcolumns){
+        bool aux=max_trees_tiles.get_task(mtt);
+        if(aux){
+            std::cout << "====== tile "<< mtt->mt->grid_i << ", " << mtt->mt->grid_j << " =====\n";
+            // std::cout << mtt->mt->to_string(PARENT)<<"\n\n";
+            std:: cout << total_print++ << "\n";
+        }
+    }
+
 }

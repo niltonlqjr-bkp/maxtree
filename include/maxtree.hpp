@@ -106,7 +106,7 @@ class maxtree{
         void update_from_boundary_tree(boundary_tree *bt);
         boundary_tree *get_boundary_tree_no_overlap(uint8_t connectivity=4);
         
-        std::string to_string(enum maxtee_node_field field = PARENT,bool colored = true, uint8_t spaces = 5, uint8_t decimal = 0);
+        std::string to_string(enum maxtee_node_field field = PARENT,bool colored = false, uint8_t spaces = 5, uint8_t decimal = 0);
         std::string string_borders();
         
         /* filter a elements using boundary tree */

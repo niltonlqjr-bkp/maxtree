@@ -126,7 +126,7 @@ void input_tile_task::read_tile(vips::VImage *img){
 
 // maxtree_task class
 
-/* maxtree_task::maxtree_task(input_tile_task *t, bool copy){
+maxtree_task::maxtree_task(input_tile_task *t, bool copy) {
     if(copy){
         std::cerr << "not ready yet\n creating a maxtreetask with pointer instead of a copy\n";
         this->mt = t->tile;
@@ -134,7 +134,7 @@ void input_tile_task::read_tile(vips::VImage *img){
         this->mt = t->tile;
     }
     this->mt->compute_sequential_recursive();
-} */
+}
 
 uint64_t maxtree_task::size(){
     return this->mt->get_size();
