@@ -49,14 +49,16 @@ bool bag_of_tasks<Task>::get_task(Task &ret, int priority){
         this->waiting++;
         this->has_task.wait(l);
     }
-    if(!this->running){
-        return false;
-    }else{
+    // if(!this->running){
+    //     return false;
+    if(num_task > 0){
         ret = this->tasks->at(pos);
         this->tasks->remove_at(pos);
         this->num_task--;
         this->no_task.notify_all();
         return true;
+    }else{
+        return false;
     }
     
 }

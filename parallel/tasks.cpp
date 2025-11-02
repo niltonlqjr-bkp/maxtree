@@ -68,7 +68,7 @@ void input_tile_task::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolu
         noborder_rl = num_w_ceil + this->j * w_trunc;
     }
 
-    std::cout << this->i << ", " << this->j << " real top:" << noborder_rt << " real left: " << noborder_rl << "\n";
+    if(verbose) std::cout << this->i << ", " << this->j << " real top:" << noborder_rt << " real left: " << noborder_rl << "\n";
 
     std::vector<bool> borders(4,false);
     
@@ -105,7 +105,7 @@ void input_tile_task::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolu
     // create the class for tile representation
     this->tile = new maxtree(borders, this->tile_lines, this->tile_columns, this->i, this->j);
 
-    // prepare only the region of interest in this task to be read;
+    
     
 }
 
