@@ -24,6 +24,7 @@ class bag_of_tasks{
         int position_of(int priority);
         bool is_running();
         bool get_task(Task &ret, int priority = -1);
+        Task at(int pos);
         void wait_empty();
         void wakeup_workers(bool lock = true);
         void notify_end();

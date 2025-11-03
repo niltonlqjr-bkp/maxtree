@@ -64,6 +64,11 @@ bool bag_of_tasks<Task>::get_task(Task &ret, int priority){
 }
 
 template <class Task>
+Task bag_of_task<Task>::at(int pos){
+    return this->tasks->at(pos)
+}
+
+template <class Task>
 void bag_of_tasks<Task>::wait_empty(){
     std::unique_lock<std::mutex> l(this->lock);
     while(this->num_task > 0){

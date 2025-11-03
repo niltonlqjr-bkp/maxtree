@@ -309,6 +309,16 @@ void worker_get_boundary_tree(bag_of_tasks<maxtree_task *> &maxtrees, bag_of_tas
 
 }
 
+void worker_local_merge(bag_of_tasks<merge_btrees_task *> &merge_task){
+    bool got_task;
+    boundary_tree_task *btt;
+    while(boundary_trees.is_running()){
+        got_task = boundary_trees.get_task();
+        
+    }
+
+}
+
 int main(int argc, char *argv[]){
     vips::VImage *in;
     maxtree *t;
