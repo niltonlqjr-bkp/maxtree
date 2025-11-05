@@ -145,9 +145,11 @@ uint64_t maxtree_task::size(){
 
 boundary_tree_task::boundary_tree_task(maxtree_task *t){
     this->bt = t->mt->get_boundary_tree();
+    this->index = (this->bt->grid_i) * 0xFFFFFFFF + this->bt->grid_j;
 }
 
 
 uint64_t boundary_tree_task::size(){
     return this->bt->boundary_tree_lroot->size();
+    // return this->index;
 }

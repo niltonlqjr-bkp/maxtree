@@ -64,8 +64,19 @@ bool bag_of_tasks<Task>::get_task(Task &ret, int priority){
 }
 
 template <class Task>
-Task bag_of_task<Task>::at(int pos){
-    return this->tasks->at(pos)
+bool bag_of_tasks<Task>::get_task_by_position(Task &ret, int position){
+    std::unique_lock<std::mutex> l(this->lock);
+    if(this->num_task > 0 && position < this->tasks->size()){
+        ret = this->at(position);
+        return true;
+    }
+    return false;
+}
+
+
+template <class Task>
+Task bag_of_tasks<Task>::at(int pos){
+    return this->tasks->at(pos);
 }
 
 template <class Task>
@@ -111,4 +122,15 @@ template <class Task>
 bool bag_of_tasks<Task>::empty(){
     std::unique_lock<std::mutex> l(this->lock);
     return this->tasks->size() == 0;
+}
+
+template <class Task>
+template <class T> uint64_t bag_of_tasks<Task>::search_by_field(T value, T getter(Task)){
+    uint32_t i;
+    for(i = 0; i<this->tasks->size(); i++){
+        if(value == getter(this->tasks->at(i))){
+            return i;
+        }
+    }
+    return -1;
 }

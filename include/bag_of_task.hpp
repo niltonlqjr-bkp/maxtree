@@ -32,6 +32,9 @@ class bag_of_tasks{
         int get_num_task();
         void print();
         bool empty();
+        template <class T> uint64_t search_by_field(T value, std::function<T()> getter);
+        template <class T> uint64_t search_by_field(T value, T getter(Task));
+        bool get_task_by_position(Task &ret, int position);
 };
 
 #include "bag_of_task.tpp"

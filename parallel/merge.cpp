@@ -308,15 +308,18 @@ void worker_get_boundary_tree(bag_of_tasks<maxtree_task *> &maxtrees, bag_of_tas
     }
 
 }
+uint64_t get_task_index(boundary_tree_task *t){
+    return t->index;
+}
 
-void worker_local_merge(bag_of_tasks<merge_btrees_task *> &merge_task){
+void worker_local_merge(bag_of_tasks<boundary_tree_task *> &merge_task){
     bool got_task;
     boundary_tree_task *btt;
-    while(boundary_trees.is_running()){
-        got_task = boundary_trees.get_task();
-        
+    while(merge_task.is_running()){
+        got_task = merge_task.get_task(btt);
+        auto index = merge_task.search_by_field<uint64_t>(btt->index, get_task_index);
+        std::cout << "task index:" << btt->index << "\n";
     }
-
 }
 
 int main(int argc, char *argv[]){
@@ -331,7 +334,7 @@ int main(int argc, char *argv[]){
     uint32_t num_th;
     bag_of_tasks<input_tile_task*> bag_tiles;
     bag_of_tasks<maxtree_task*> maxtree_tiles;
-    bag_of_tasks<boundary_tree_task *> bounday_bags;
+    bag_of_tasks<boundary_tree_task *> boundary_bags;
     std::vector<std::thread*> threads_mt, threads_bt;
 
     verify_args(argc, argv);
@@ -374,14 +377,20 @@ int main(int argc, char *argv[]){
     } */
    
     for(uint32_t i=0; i<num_th;i++){
-       threads_bt.push_back(new std::thread(worker_get_boundary_tree, std::ref(maxtree_tiles), std::ref(bounday_bags) ));
+       threads_bt.push_back(new std::thread(worker_get_boundary_tree, std::ref(maxtree_tiles), std::ref(boundary_bags) ));
     }
     
     wait_empty<maxtree_task *>(maxtree_tiles, num_th);
 
+    // std::thread thr(worker_local_merge, std::ref(boundary_bags));
+
+    // wait_empty<boundary_tree_task *>(boundary_bags, num_th);
+
     boundary_tree_task *btt;
-    while(bounday_bags.get_num_task()){
-        bool got = bounday_bags.get_task(btt);
+    while(boundary_bags.get_num_task()){
+        std::cout << "total of tasks:" << boundary_bags.get_num_task() << "\n";
+        bool got = boundary_bags.get_task(btt);
+        std::cout << "task index: "<< btt->index << "\n";
         btt->bt->print_tree();
     }
 

@@ -38,6 +38,7 @@ class maxtree_task: public comparable_task{
 
 class boundary_tree_task: public comparable_task{
     public:
+        uint64_t index;
         boundary_tree *bt;
         boundary_tree_task(maxtree_task *t);
         uint64_t size();
@@ -45,6 +46,10 @@ class boundary_tree_task: public comparable_task{
     
 };
 
+class merge_btrees_task: public comparable_task{
+    public:
+        boundary_tree t1,t2;
+};
 
 bool operator<(comparable_task &l, comparable_task &r);
 bool operator>(comparable_task &l, comparable_task &r);
