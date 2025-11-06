@@ -132,5 +132,5 @@ template <class T> uint64_t bag_of_tasks<Task>::search_by_field(T value, T gette
             return i;
         }
     }
-    return -1;
+    throw std::runtime_error("Task not found on bag\n");
 }

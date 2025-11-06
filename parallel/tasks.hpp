@@ -1,10 +1,17 @@
 #include <vips/vips8>
+#include <utility>
 
 #include "maxtree.hpp"
 #include "boundary_tree.hpp"
 #ifndef __TASKS_HPP__
 #define __TASKS_HPP__
 // classes that defines the procedures to compute a tile maxtree
+
+#define GRID_LINE_SIZE 0xFFFFFFFF
+
+enum neighbor_direction {NB_AT_BOTTOM, NB_AT_RIGHT, NB_AT_TOP, NB_AT_LEFT};
+
+static const std::vector<std::pair<int32_t, int32_t>> NEIGHBOR_DIRECTION = {{1,0}, {0,1}, {-1,0}, {0,-1}};
 
 class comparable_task{
     public:
@@ -42,6 +49,7 @@ class boundary_tree_task: public comparable_task{
         boundary_tree *bt;
         boundary_tree_task(maxtree_task *t);
         uint64_t size();
+        uint64_t neighbor_idx(neighbor_direction d);
         
     
 };

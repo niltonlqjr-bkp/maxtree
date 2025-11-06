@@ -1,6 +1,8 @@
 #include "tasks.hpp"
 
- bool operator<(comparable_task &l, comparable_task &r){
+// extern std::vector<std::pair<int32_t, int32_t>> NEIGHBOR_DIRECTION;
+
+bool operator<(comparable_task &l, comparable_task &r){
     return l.size() < r.size();
 }
 
@@ -145,11 +147,17 @@ uint64_t maxtree_task::size(){
 
 boundary_tree_task::boundary_tree_task(maxtree_task *t){
     this->bt = t->mt->get_boundary_tree();
-    this->index = (this->bt->grid_i) * 0xFFFFFFFF + this->bt->grid_j;
+    this->index = this->bt->grid_i * GRID_LINE_SIZE + this->bt->grid_j;
 }
 
 
 uint64_t boundary_tree_task::size(){
     return this->bt->boundary_tree_lroot->size();
     // return this->index;
+}
+
+uint64_t boundary_tree_task::neighbor_idx(enum neighbor_direction d){
+    int32_t i_desloc = NEIGHBOR_DIRECTION[d].first;
+    int32_t j_desloc = NEIGHBOR_DIRECTION[d].second;
+    return (this->bt->grid_i + i_desloc) * GRID_LINE_SIZE + this->bt->grid_j + j_desloc; 
 }

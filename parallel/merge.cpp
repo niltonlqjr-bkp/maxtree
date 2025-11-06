@@ -247,10 +247,6 @@ void read_config(char conf_name[],
     
 }
 
-
-
-
-
 void read_sequential_file(bag_of_tasks<input_tile_task*> &bag, vips::VImage *in, uint32_t glines, uint32_t gcolumns){
     input_tile_task *nt;
     for(uint32_t i=0; i<glines; i++){
@@ -334,7 +330,7 @@ int main(int argc, char *argv[]){
     uint32_t num_th;
     bag_of_tasks<input_tile_task*> bag_tiles;
     bag_of_tasks<maxtree_task*> maxtree_tiles;
-    bag_of_tasks<boundary_tree_task *> boundary_bags;
+    bag_of_tasks<boundary_tree_task *> boundary_bag;
     std::vector<std::thread*> threads_mt, threads_bt;
 
     verify_args(argc, argv);
@@ -357,11 +353,11 @@ int main(int argc, char *argv[]){
     std::cout << "bag_tiles.get_num_task:" << bag_tiles.get_num_task() << "\n";
     // bag_tiles.start();
 
+    bag_tiles.start();
     for(uint32_t i=0; i<num_th; i++){
         threads_mt.push_back(new std::thread(worker_maxtree_calc, std::ref(bag_tiles), std::ref(maxtree_tiles)));
     }
     maxtree_task *mtt;
-    
     wait_empty<input_tile_task *>(bag_tiles, num_th);
 
     std::cout << "max_trees_tiles.get_num_task:" << maxtree_tiles.get_num_task() << "\n";
@@ -376,22 +372,37 @@ int main(int argc, char *argv[]){
         }
     } */
    
+    maxtree_tiles.start();
     for(uint32_t i=0; i<num_th;i++){
-       threads_bt.push_back(new std::thread(worker_get_boundary_tree, std::ref(maxtree_tiles), std::ref(boundary_bags) ));
+       threads_bt.push_back(new std::thread(worker_get_boundary_tree, std::ref(maxtree_tiles), std::ref(boundary_bag) ));
     }
-    
     wait_empty<maxtree_task *>(maxtree_tiles, num_th);
 
-    // std::thread thr(worker_local_merge, std::ref(boundary_bags));
+    // std::thread thr(worker_local_merge, std::ref(boundary_bag));
 
-    // wait_empty<boundary_tree_task *>(boundary_bags, num_th);
+    // wait_empty<boundary_tree_task *>(boundary_bag, num_th);
 
-    boundary_tree_task *btt;
-    while(boundary_bags.get_num_task()){
-        std::cout << "total of tasks:" << boundary_bags.get_num_task() << "\n";
-        bool got = boundary_bags.get_task(btt);
-        std::cout << "task index: "<< btt->index << "\n";
-        btt->bt->print_tree();
+    boundary_tree_task *btt, *n;
+    while(boundary_bag.get_num_task()){
+        std::cout << "total of tasks:" << boundary_bag.get_num_task() << "\n";
+        bool got = boundary_bag.get_task(btt);
+        if(got){
+            std::cout << "task index: "<< btt->index << "\n";
+            btt->bt->print_tree();
+            auto idx = btt->neighbor_idx(NB_AT_LEFT);
+            try{
+                auto pos = boundary_bag.search_by_field(idx,get_task_index);
+                auto got_n = boundary_bag.get_task_by_position(n, pos);
+                std::cout << "+++++++++++++++ neighbor task of " << btt->index << " has index: " << n->index << "\n";
+                n->bt->print_tree();
+                
+            }catch(std::runtime_error &e){
+                std::cout << "neighbor task of " << btt->index << " not found\n";
+            }catch(std::out_of_range &r){
+                std::cerr << "try to access an out of range element\n";
+            }
+        }
+        std::cout << "====================================================================================\n";
     }
 
 
