@@ -7,9 +7,9 @@
 #define __TASKS_HPP__
 // classes that defines the procedures to compute a tile maxtree
 
-#define GRID_LINE_SIZE 0xFFFFFFFF
+// #define GRID_LINE_SIZE 
 
-enum neighbor_direction {NB_AT_BOTTOM, NB_AT_RIGHT, NB_AT_TOP, NB_AT_LEFT};
+enum neighbor_direction{NB_AT_BOTTOM = 0, NB_AT_RIGHT = 1, NB_AT_TOP = 2, NB_AT_LEFT = 3};
 
 static const std::vector<std::pair<int32_t, int32_t>> NEIGHBOR_DIRECTION = {{1,0}, {0,1}, {-1,0}, {0,-1}};
 

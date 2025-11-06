@@ -126,7 +126,7 @@ bool bag_of_tasks<Task>::empty(){
 
 template <class Task>
 template <class T> uint64_t bag_of_tasks<Task>::search_by_field(T value, T getter(Task)){
-    uint32_t i;
+    uint64_t i;
     for(i = 0; i<this->tasks->size(); i++){
         if(value == getter(this->tasks->at(i))){
             return i;

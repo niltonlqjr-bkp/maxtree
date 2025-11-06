@@ -2,6 +2,15 @@
 
 // extern std::vector<std::pair<int32_t, int32_t>> NEIGHBOR_DIRECTION;
 
+#ifndef __GRID_LINE_SIZE__
+#define __GRID_LINE_SIZE__
+
+uint32_t GRID_LINE_SIZE;
+
+#else
+extern uint32_t GRID_LINE_SIZE;
+#endif
+
 bool operator<(comparable_task &l, comparable_task &r){
     return l.size() < r.size();
 }

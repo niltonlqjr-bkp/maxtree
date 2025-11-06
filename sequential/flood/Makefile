@@ -72,7 +72,7 @@ wilkinson_old: base
 
 
 clean:
-	@make -C ${maxtree_node_dir} clean
+	@make -C ${maxtree_node_dir} clean 
 	@make -C ${maxtree_dir} clean
 	@make -C ${boundary_tree_dir} clean
 	@make -C ${utils_dir} clean

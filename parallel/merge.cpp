@@ -26,7 +26,7 @@ using namespace vips;
 bool print_only_trees;
 bool verbose;
 
-
+extern uint32_t GRID_LINE_SIZE;
 
 /*unused code
 
@@ -336,6 +336,7 @@ int main(int argc, char *argv[]){
     verify_args(argc, argv);
     read_config(argv[2], out_name, out_ext, glines, gcolumns, lambda, pixel_connection, colored, num_th);
 
+    GRID_LINE_SIZE = gcolumns;
 
     if (VIPS_INIT(argv[0])) { 
         vips_error_exit (NULL);
@@ -387,17 +388,20 @@ int main(int argc, char *argv[]){
         std::cout << "total of tasks:" << boundary_bag.get_num_task() << "\n";
         bool got = boundary_bag.get_task(btt);
         if(got){
-            std::cout << "task index: "<< btt->index << "\n";
-            btt->bt->print_tree();
-            auto idx = btt->neighbor_idx(NB_AT_LEFT);
+            
+            // btt->bt->print_tree();
+            std::cout << "btt " << btt->bt->grid_i << "," << btt->bt->grid_j << "   ";
+            auto idx = btt->neighbor_idx(NB_AT_RIGHT);
             try{
-                auto pos = boundary_bag.search_by_field(idx,get_task_index);
+                auto pos = boundary_bag.search_by_field<uint64_t>(idx,get_task_index);
                 auto got_n = boundary_bag.get_task_by_position(n, pos);
-                std::cout << "+++++++++++++++ neighbor task of " << btt->index << " has index: " << n->index << "\n";
-                n->bt->print_tree();
+                std::cout << "n: " << n->bt->grid_i << "," << n->bt->grid_j << "\n";
+                // std::cout << "+++++++++++++++ neighbor task of " << btt->index << " has index: " << n->index << "\n";
+                // n->bt->print_tree();
+                std::cout << "task index: "<< btt->index << " neighbor index: " << n->index <<"\n";
                 
             }catch(std::runtime_error &e){
-                std::cout << "neighbor task of " << btt->index << " not found\n";
+                std::cout << "\nneighbor task of " << btt->index << " not found\n";
             }catch(std::out_of_range &r){
                 std::cerr << "try to access an out of range element\n";
             }
