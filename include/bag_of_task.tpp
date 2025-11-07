@@ -68,11 +68,31 @@ bool bag_of_tasks<Task>::get_task_by_position(Task &ret, int position){
     std::unique_lock<std::mutex> l(this->lock);
     if(this->num_task > 0 && position < this->tasks->size()){
         ret = this->at(position);
+        this->tasks->remove_at(position);
+        this->num_task--;
+        this->no_task.notify_all();
         return true;
     }
     return false;
 }
 
+template <class Task>
+template <class T> 
+bool bag_of_tasks<Task>::get_task_by_field(Task &ret, T value, T getter(Task)){
+    std::unique_lock<std::mutex> l(this->lock);
+    try{
+        auto idx = this->search_by_field<T>(value, getter, false);
+        ret = this->at(idx);
+        this->tasks->remove_at(idx);
+        this->num_task--;
+        this->no_task.notify_all();
+        return true;
+    }catch(std::runtime_error &e){
+        return false;
+    }catch(std::out_of_range &e){
+        return false;
+    }
+}
 
 template <class Task>
 Task bag_of_tasks<Task>::at(int pos){
@@ -125,12 +145,16 @@ bool bag_of_tasks<Task>::empty(){
 }
 
 template <class Task>
-template <class T> uint64_t bag_of_tasks<Task>::search_by_field(T value, T getter(Task)){
+template <class T>
+uint64_t bag_of_tasks<Task>::search_by_field(T value, T getter(Task), bool lock){
+    if(lock){
+        std::unique_lock<std::mutex> l(this->lock);
+    }
     uint64_t i;
-    for(i = 0; i<this->tasks->size(); i++){
+    for(i = 0; i < this->tasks->size(); i++){
         if(value == getter(this->tasks->at(i))){
             return i;
         }
     }
-    throw std::runtime_error("Task not found on bag\n");
+    throw std::runtime_error("error on bag_of_task::search_by_field: Task not found on bag\n");
 }

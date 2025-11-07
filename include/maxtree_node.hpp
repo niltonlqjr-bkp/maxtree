@@ -40,8 +40,8 @@ static const std::vector<std::string> NamesBordersVector({
 });
 
 enum merge_directions{
-    MERGE_HORIZONTAL,
-    MERGE_VERTICAL
+    MERGE_HORIZONTAL_BORDER,
+    MERGE_VERTICAL_BORDER
 };
 
 

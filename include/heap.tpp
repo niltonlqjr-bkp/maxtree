@@ -121,8 +121,10 @@ T max_heap<T>::at(int idx){
 template<typename T>
 // template<typename T, class Compare>
 void max_heap<T>::remove_at(int idx){
-    this->data.at(idx) = this->data.back();
-    this->data.pop_back();
-    this->max_heapfy(idx);
+    if(idx < this->data.size()){
+        this->data.at(idx) = this->data.back();
+        this->data.pop_back();
+        this->max_heapfy(idx);
+    }
 }
 

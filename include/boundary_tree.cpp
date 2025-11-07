@@ -1042,10 +1042,10 @@ void boundary_tree::combine_borders(boundary_tree *t1, boundary_tree *t2, enum m
     uint64_t ini ;
     boundary_node *bn;
     
-    if(d == MERGE_VERTICAL){
+    if(d == MERGE_VERTICAL_BORDER){
         first_border=LEFT_BORDER; second_border=RIGHT_BORDER; 
         third_border=TOP_BORDER; fourth_border=BOTTOM_BORDER;
-    }else if(d == MERGE_HORIZONTAL){
+    }else if(d == MERGE_HORIZONTAL_BORDER){
         first_border=TOP_BORDER; second_border=BOTTOM_BORDER; 
         third_border=LEFT_BORDER; fourth_border=RIGHT_BORDER;
     }
@@ -1236,7 +1236,7 @@ boundary_tree *boundary_tree::merge(boundary_tree *t, enum merge_directions d, u
     //ret_tree = this->get_copy(true);
     ret_tree = new boundary_tree(this->h, this->w, this->grid_i, this->grid_j);
     merge_tree = t;
-    if(d == MERGE_HORIZONTAL){  // prepare data to merge borders placed on horizontal (this tree bottom border and merged tree top border)
+    if(d == MERGE_HORIZONTAL_BORDER){  // prepare data to merge borders placed on horizontal (this tree bottom border and merged tree top border)
         if(this->grid_i < merge_tree->grid_i){
             
             v_this = this->border_elements->at(BOTTOM_BORDER);
@@ -1254,7 +1254,7 @@ boundary_tree *boundary_tree::merge(boundary_tree *t, enum merge_directions d, u
                       << merge_tree->grid_i << ", " << merge_tree->grid_j << "). The destiny tree must be at top left of merged tree.\n";
             exit(EX_DATAERR);
         }
-    }else if(d == MERGE_VERTICAL){ // prepare data to merger borders placed on vertical (this tree right border and merged tree left border)
+    }else if(d == MERGE_VERTICAL_BORDER){ // prepare data to merger borders placed on vertical (this tree right border and merged tree left border)
         if(this->grid_j < merge_tree->grid_j){
             
             v_this = this->border_elements->at(RIGHT_BORDER);
