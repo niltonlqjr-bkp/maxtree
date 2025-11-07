@@ -393,12 +393,17 @@ int main(int argc, char *argv[]){
             std::cout << "btt " << btt->bt->grid_i << "," << btt->bt->grid_j << "   ";
             auto idx = btt->neighbor_idx(NB_AT_RIGHT);
             try{
-                auto pos = boundary_bag.search_by_field<uint64_t>(idx,get_task_index);
-                auto got_n = boundary_bag.get_task_by_position(n, pos);
-                std::cout << "n: " << n->bt->grid_i << "," << n->bt->grid_j << "\n";
-                // std::cout << "+++++++++++++++ neighbor task of " << btt->index << " has index: " << n->index << "\n";
-                // n->bt->print_tree();
-                std::cout << "task index: "<< btt->index << " neighbor index: " << n->index <<"\n";
+                // auto pos = boundary_bag.search_by_field<uint64_t>(idx,get_task_index);
+                auto got_n = boundary_bag.get_task_by_field<uint64_t>(n, idx, get_task_index);
+                if(got_n){
+                    std::cout << "n: " << n->bt->grid_i << "," << n->bt->grid_j << "\n";
+                    // std::cout << "+++++++++++++++ neighbor task of " << btt->index << " has index: " << n->index << "\n";
+                    // n->bt->print_tree();
+                    std::cout << "task index: "<< btt->index << " neighbor index: " << n->index <<"\n";
+                    if(n->bt->grid_j == btt->bt->grid_j){
+                        boundary_tree *new_btree = btt->bt->merge(n->bt,MERGE_VERTICAL_BORDER);
+                    }
+                }
                 
             }catch(std::runtime_error &e){
                 std::cout << "\nneighbor task of " << btt->index << " not found\n";

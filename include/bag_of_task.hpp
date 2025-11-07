@@ -24,6 +24,8 @@ class bag_of_tasks{
         int position_of(int priority);
         bool is_running();
         bool get_task(Task &ret, int priority = -1);
+        bool get_task_by_position(Task &ret, int position);
+        template <class T> bool get_task_by_field(Task &ret, T value, T getter(Task));
         Task at(int pos);
         void wait_empty();
         void wakeup_workers(bool lock = true);
@@ -32,9 +34,8 @@ class bag_of_tasks{
         int get_num_task();
         void print();
         bool empty();
-        template <class T> uint64_t search_by_field(T value, std::function<T()> getter);
-        template <class T> uint64_t search_by_field(T value, T getter(Task));
-        bool get_task_by_position(Task &ret, int position);
+        template <class T> uint64_t search_by_field(T value, T getter(Task), bool lock=false);
+
 };
 
 #include "bag_of_task.tpp"

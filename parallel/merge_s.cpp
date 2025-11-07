@@ -310,7 +310,7 @@ int main(int argc, char *argv[]){
                     std::cout << to_merge->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
                     std::cout << "=================================================================\n";
                 }
-                merged = base_bt->merge(to_merge,MERGE_VERTICAL,pixel_connection);
+                merged = base_bt->merge(to_merge,MERGE_VERTICAL_BORDER,pixel_connection);
 
                 merged->update_tree(merged);
                 merged->compress_path();
@@ -365,7 +365,7 @@ int main(int argc, char *argv[]){
                 std::cout << to_merge->lroot_to_string(BOUNDARY_ALL_FIELDS,"\n") <<"\n";
                 std::cout << "=================================================================\n";
             }
-            merged=base_bt->merge(to_merge,MERGE_HORIZONTAL,pixel_connection);
+            merged=base_bt->merge(to_merge,MERGE_HORIZONTAL_BORDER,pixel_connection);
             // if(verbose){
                 // std::cout << "---------------------before update and compress---------------------\n";
                 // std::cout << "merged boundary tree:" << merged->grid_i << ", " << merged->grid_j <<  "\n";
