@@ -159,14 +159,19 @@ boundary_tree_task::boundary_tree_task(maxtree_task *t){
     this->index = this->bt->grid_i * GRID_LINE_SIZE + this->bt->grid_j;
 }
 
+boundary_tree_task::boundary_tree_task(boundary_tree *t){
+    this->bt = t;
+    this->index = this->bt->grid_i * GRID_LINE_SIZE + this->bt->grid_j;
+}
+
 
 uint64_t boundary_tree_task::size(){
     return this->bt->boundary_tree_lroot->size();
     // return this->index;
 }
 
-uint64_t boundary_tree_task::neighbor_idx(enum neighbor_direction d){
-    int32_t i_desloc = NEIGHBOR_DIRECTION[d].first;
-    int32_t j_desloc = NEIGHBOR_DIRECTION[d].second;
+uint64_t boundary_tree_task::neighbor_idx(enum neighbor_direction direction, int32_t distance){
+    int32_t i_desloc = NEIGHBOR_DIRECTION[direction].first * distance;
+    int32_t j_desloc = NEIGHBOR_DIRECTION[direction].second * distance;
     return (this->bt->grid_i + i_desloc) * GRID_LINE_SIZE + this->bt->grid_j + j_desloc; 
 }

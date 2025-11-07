@@ -330,7 +330,8 @@ int main(int argc, char *argv[]){
     uint32_t num_th;
     bag_of_tasks<input_tile_task*> bag_tiles;
     bag_of_tasks<maxtree_task*> maxtree_tiles;
-    bag_of_tasks<boundary_tree_task *> boundary_bag;
+    bag_of_tasks<boundary_tree_task *> boundary_bag, boundary_bag_aux;
+    bag_of_tasks<boundary_tree_task *> *bound_bag_source, *bound_bag_dest;
     std::vector<std::thread*> threads_mt, threads_bt;
 
     verify_args(argc, argv);
@@ -383,25 +384,39 @@ int main(int argc, char *argv[]){
 
     // wait_empty<boundary_tree_task *>(boundary_bag, num_th);
 
-    boundary_tree_task *btt, *n;
-    while(boundary_bag.get_num_task()){
-        std::cout << "total of tasks:" << boundary_bag.get_num_task() << "\n";
-        bool got = boundary_bag.get_task(btt);
+
+    //task to get pairs of boundary trees.
+    boundary_tree_task *btt, *n, *aux;
+    bound_bag_source = &boundary_bag;
+    bound_bag_dest = &boundary_bag_aux;
+    uint64_t idx;
+    while(bound_bag_source->get_num_task()){
+        std::cout << "total of tasks:" << bound_bag_source->get_num_task() << "\n";
+        bool got = bound_bag_source->get_task(btt);
         if(got){
             
             // btt->bt->print_tree();
-            std::cout << "btt " << btt->bt->grid_i << "," << btt->bt->grid_j << "   ";
-            auto idx = btt->neighbor_idx(NB_AT_RIGHT);
+            if(btt->bt->grid_j % 2 == 0){
+                idx = btt->neighbor_idx(NB_AT_RIGHT);
+            }else{
+                idx = btt->neighbor_idx(NB_AT_LEFT);
+            }
             try{
                 // auto pos = boundary_bag.search_by_field<uint64_t>(idx,get_task_index);
-                auto got_n = boundary_bag.get_task_by_field<uint64_t>(n, idx, get_task_index);
+                auto got_n = bound_bag_source->get_task_by_field<uint64_t>(n, idx, get_task_index);
                 if(got_n){
-                    std::cout << "n: " << n->bt->grid_i << "," << n->bt->grid_j << "\n";
+                    if(btt->bt->grid_j % 2 != 0){
+                        std::cout << "swap btt with n\n";
+                        aux = btt;
+                        btt = n;
+                        n = aux;
+                    }
                     // std::cout << "+++++++++++++++ neighbor task of " << btt->index << " has index: " << n->index << "\n";
                     // n->bt->print_tree();
-                    std::cout << "task index: "<< btt->index << " neighbor index: " << n->index <<"\n";
-                    if(n->bt->grid_j == btt->bt->grid_j){
-                        boundary_tree *new_btree = btt->bt->merge(n->bt,MERGE_VERTICAL_BORDER);
+                    if(n->bt->grid_i == btt->bt->grid_i){
+                        std::cout << "btt " << btt->bt->grid_i << "," << btt->bt->grid_j << "   " 
+                                  << "n: " << n->bt->grid_i << "," << n->bt->grid_j << "\n";
+                        
                     }
                 }
                 
