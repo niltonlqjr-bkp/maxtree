@@ -24,15 +24,18 @@ endif
 
 divide_name=divide
 merge_name=merge
+merge_s_name=merge_s
 grow_name=grow_region
 
 source_grow=${grow_name}.cpp
 source_merge=${merge_name}.cpp
+source_merge_s=${merge_s_name}.cpp
 source_divide=${divide_name}.cpp
 
 dest_grow = exec/${grow_name}
 dest_divide = exec/${divide_name}
 dest_merge = exec/${merge_name}
+dest_merge_s = exec/${merge_s_name}
 
 
 
@@ -53,6 +56,7 @@ figures_flags ?=
 
 all: ${dest_merge} 
 
+
 ${dest_merge}:base tasks.o
 	@mkdir -p exec
 	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_merge} \
@@ -63,6 +67,16 @@ ${dest_merge}:base tasks.o
 		${tasks_dir}/tasks.o \
 		-I${maxtree_node_dir} -I${utils_dir} -I${maxtree_dir} -I${heap_dir} \
 		${vips_args} -o ${dest_merge}
+
+${dest_merge_s}: base
+	@mkdir -p exec
+	g++ ${OPT} ${EXE_CPP_FLAGS} ${source_merge_s} \
+		${utils_dir}/utils.o \
+	 	${maxtree_node_dir}/maxtree_node.o \
+		${maxtree_dir}/maxtree.o \
+		${boundary_tree_dir}/boundary_tree.o \
+		-I${maxtree_node_dir} -I${utils_dir} -I${maxtree_dir} -I${heap_dir} \
+		${vips_args} -o ${dest_merge_s}
 
 ${dest_divide}: base
 	@mkdir -p exec

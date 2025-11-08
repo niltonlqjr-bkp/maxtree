@@ -551,29 +551,6 @@ void maxtree::fill_from_VRegion(vips::VRegion &reg_in, uint32_t base_h, uint32_t
     this->h = vips_region_height(c_region);
     this->w = vips_region_width(c_region);
     
-    uint32_t noborder_h = this->h, noborder_w = this->w;
-
-    int32_t ini_col=base_h, ini_line=base_h;
-
-    if(this->tile_borders->at(LEFT_BORDER)){
-        noborder_h--;
-        ini_col++;
-    }
-    if(this->tile_borders->at(RIGHT_BORDER)){
-        noborder_h--;
-    }
-    if(this->tile_borders->at(TOP_BORDER)){
-        noborder_w--;
-        ini_line++;
-    }
-    if(this->tile_borders->at(BOTTOM_BORDER)){
-        noborder_w--;
-    }
-     
-    // if(verbose){
-    //    std::cout << "filling: " << base_h << ", " << base_w << "..." << base_h+this->h << ", " << base_w+this->w <<"\n";
-    // } 
-
     
     for(int l = 0; l < this->h; l++){
         for(int c = 0; c < this->w; c++){

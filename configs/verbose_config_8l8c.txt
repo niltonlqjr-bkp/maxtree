@@ -22,3 +22,6 @@ gcolumns=8
 lambda=15
 
 output = saidas/output_8L8C
+
+#output extension (only the libvips extensions)
+output_ext=png

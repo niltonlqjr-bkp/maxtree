@@ -105,9 +105,9 @@ int main(int argc, char *argv[]){
         exit(EX_USAGE);
     }
 
-    /* if (VIPS_INIT(argv[0])) { 
+    if (VIPS_INIT(argv[0])) { 
         vips_error_exit (NULL);
-    } */
+    }
 
     in = new vips::VImage(
                 vips::VImage::new_from_file(argv[1],

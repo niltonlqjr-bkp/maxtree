@@ -79,7 +79,7 @@ void input_tile_task::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolu
         noborder_rl = num_w_ceil + this->j * w_trunc;
     }
 
-    if(verbose) std::cout << this->i << ", " << this->j << " real top:" << noborder_rt << " real left: " << noborder_rl << "\n";
+
 
     std::vector<bool> borders(4,false);
     
@@ -112,10 +112,12 @@ void input_tile_task::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolu
         this->tile_columns++;
         borders.at(RIGHT_BORDER) = true;
     }
+    if(verbose)  std::cout << this->i << ", " << this->j << " real top:" << noborder_rt << " real left: " << noborder_rl 
+                           << " lines:" << this->tile_lines << " cols:" << this->tile_columns << "\n";
 
     // create the class for tile representation
     this->tile = new maxtree(borders, this->tile_lines, this->tile_columns, this->i, this->j);
-
+    
     
     
 }
@@ -125,15 +127,20 @@ void input_tile_task::read_tile(vips::VImage *img){
     h=img->height();
     w=img->width();
     
+    uint32_t top_ini, left_ini;
+
     vips::VRegion reg = img->region(this->reg_left, this->reg_top, this->tile_columns, this->tile_lines);
     reg.prepare(this->reg_left, this->reg_top, this->tile_columns, this->tile_lines);
     
-    this->tile->fill_from_VRegion(reg, this->reg_top, this->reg_left, this->tile_lines, this->tile_columns);;
+    if(verbose) std::cout << "reding:"<< this->i << ", " << this->j << " real top:" << this->reg_top << " real left: " << this->reg_left 
+                          << " lines:" << this->tile_lines << " cols:" << this->tile_columns << "\n";
+    
+    
+
+    this->tile->fill_from_VRegion(reg, this->reg_top, this->reg_left, h, w);
     vips_region_invalidate(reg.get_region());
 
 }
-
-
 
 // maxtree_task class
 

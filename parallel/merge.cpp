@@ -297,6 +297,9 @@ void worker_get_boundary_tree(bag_of_tasks<maxtree_task *> &maxtrees, bag_of_tas
     boundary_tree_task *btt;
     while(maxtrees.is_running()){
         got_task = maxtrees.get_task(mtt);
+        std::string stmt = std::to_string(mtt->mt->grid_i) + "," + std::to_string(mtt->mt->grid_j) +"\n";
+        stmt += mtt->mt->to_string(GLOBAL_IDX,false) + "\n";
+        std::cout << stmt;
         if(got_task){
             btt = new boundary_tree_task(mtt);
             boundary_trees.insert_task(btt);
@@ -441,7 +444,14 @@ int main(int argc, char *argv[]){
                                          << mbt->bt2->grid_i << ", " << mbt->bt2->grid_j << "\n";
         
         if(got_mt){
+            if(verbose){
+                std::cout << "-------------------TREE 1------------------\n";
+                mbt->bt1->print_tree();
+                std::cout << "-------------------TREE 2------------------\n";
+                mbt->bt2->print_tree();
+            }
             auto nt = mbt->execute();
+            if(verbose) nt->print_tree();
 
         }
     }

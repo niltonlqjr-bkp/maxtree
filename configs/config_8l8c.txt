@@ -22,3 +22,5 @@ gcolumns=8
 lambda=15
 
 output = saidas/output_4L5C
+
+output_ext=png
