@@ -320,18 +320,22 @@ void worker_local_merge(bag_of_tasks<boundary_tree_task *> &merge_task){
 
 int main(int argc, char *argv[]){
     vips::VImage *in;
-    maxtree *t;
-    input_tile_task *tile;
     std::string out_name, out_ext;
+    
     uint32_t glines, gcolumns;
     uint8_t pixel_connection;
-    bool colored;
-    Tattribute lambda=2;
     uint32_t num_th;
+    bool colored;
+    
+    Tattribute lambda=2;
+    maxtree *t;
+    input_tile_task *tile;
+    
     bag_of_tasks<input_tile_task*> bag_tiles;
     bag_of_tasks<maxtree_task*> maxtree_tiles;
-    bag_of_tasks<boundary_tree_task *> boundary_bag, boundary_bag_aux;
-    bag_of_tasks<boundary_tree_task *> *bound_bag_source, *bound_bag_dest;
+    bag_of_tasks<boundary_tree_task *> boundary_bag, boundary_bag_aux, *bound_bag_source, *bound_bag_dest;
+    bag_of_tasks<merge_btrees_task *> merge_bag;
+
     std::vector<std::thread*> threads_mt, threads_bt;
 
     verify_args(argc, argv);
@@ -390,20 +394,22 @@ int main(int argc, char *argv[]){
     bound_bag_source = &boundary_bag;
     bound_bag_dest = &boundary_bag_aux;
     uint64_t idx;
+    enum neighbor_direction nb_direction;
     while(bound_bag_source->get_num_task()){
         std::cout << "total of tasks:" << bound_bag_source->get_num_task() << "\n";
         bool got = bound_bag_source->get_task(btt);
         if(got){
-            
             // btt->bt->print_tree();
             if(btt->bt->grid_j % 2 == 0){
-                idx = btt->neighbor_idx(NB_AT_RIGHT);
+                nb_direction = NB_AT_RIGHT;
             }else{
-                idx = btt->neighbor_idx(NB_AT_LEFT);
+                nb_direction = NB_AT_LEFT;
             }
+            idx = btt->neighbor_idx(nb_direction);
             try{
                 // auto pos = boundary_bag.search_by_field<uint64_t>(idx,get_task_index);
                 auto got_n = bound_bag_source->get_task_by_field<uint64_t>(n, idx, get_task_index);
+                //Olhar melhor essa questao do swap, falha de segmentacao por bordas estarem erradas.
                 if(got_n){
                     if(btt->bt->grid_j % 2 != 0){
                         std::cout << "swap btt with n\n";
@@ -416,10 +422,9 @@ int main(int argc, char *argv[]){
                     if(n->bt->grid_i == btt->bt->grid_i){
                         std::cout << "btt " << btt->bt->grid_i << "," << btt->bt->grid_j << "   " 
                                   << "n: " << n->bt->grid_i << "," << n->bt->grid_j << "\n";
-                        
+                        merge_bag.insert_task(new merge_btrees_task(btt->bt, n->bt, MERGE_VERTICAL_BORDER));
                     }
                 }
-                
             }catch(std::runtime_error &e){
                 std::cout << "\nneighbor task of " << btt->index << " not found\n";
             }catch(std::out_of_range &r){
@@ -427,6 +432,18 @@ int main(int argc, char *argv[]){
             }
         }
         std::cout << "====================================================================================\n";
+    }
+    merge_bag.start();
+    merge_btrees_task *mbt;
+    while(merge_bag.get_num_task()){
+        bool got_mt = merge_bag.get_task(mbt);
+        std::cout << "task will merge: " << mbt->bt1->grid_i << ", " << mbt->bt1->grid_j << " with "
+                                         << mbt->bt2->grid_i << ", " << mbt->bt2->grid_j << "\n";
+        
+        if(got_mt){
+            auto nt = mbt->execute();
+
+        }
     }
 
 

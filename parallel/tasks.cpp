@@ -154,14 +154,16 @@ uint64_t maxtree_task::size(){
 
 //boundary_task class
 
-boundary_tree_task::boundary_tree_task(maxtree_task *t){
+boundary_tree_task::boundary_tree_task(maxtree_task *t, int32_t next_merge_distance){
     this->bt = t->mt->get_boundary_tree();
     this->index = this->bt->grid_i * GRID_LINE_SIZE + this->bt->grid_j;
+    this->next_merge_distance = next_merge_distance;
 }
 
-boundary_tree_task::boundary_tree_task(boundary_tree *t){
+boundary_tree_task::boundary_tree_task(boundary_tree *t, int32_t next_merge_distance){
     this->bt = t;
     this->index = this->bt->grid_i * GRID_LINE_SIZE + this->bt->grid_j;
+    this->next_merge_distance = next_merge_distance;
 }
 
 
@@ -170,8 +172,34 @@ uint64_t boundary_tree_task::size(){
     // return this->index;
 }
 
-uint64_t boundary_tree_task::neighbor_idx(enum neighbor_direction direction, int32_t distance){
-    int32_t i_desloc = NEIGHBOR_DIRECTION[direction].first * distance;
-    int32_t j_desloc = NEIGHBOR_DIRECTION[direction].second * distance;
+uint64_t boundary_tree_task::neighbor_idx(enum neighbor_direction direction){
+    int32_t i_desloc = NEIGHBOR_DIRECTION[direction].first * this->next_merge_distance;
+    int32_t j_desloc = NEIGHBOR_DIRECTION[direction].second * this->next_merge_distance;
     return (this->bt->grid_i + i_desloc) * GRID_LINE_SIZE + this->bt->grid_j + j_desloc; 
+}
+
+
+merge_btrees_task::merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum merge_directions direction, int32_t distance){
+    if(direction == MERGE_VERTICAL_BORDER){
+        if(t1->grid_j+distance != t2->grid_j){
+            throw std::runtime_error("non neighbours merge");
+        }
+    }else{
+        if(t1->grid_i+distance != t2->grid_i){
+            throw std::runtime_error("non neighbours merge");
+        }
+    }
+    this->bt1 = t1;
+    this->bt2 = t2;
+    this->direction = direction;
+}
+
+uint64_t merge_btrees_task::size(){
+    return this->bt1->boundary_tree_lroot->size() + this->bt2->boundary_tree_lroot->size();
+}
+
+boundary_tree *merge_btrees_task::execute(){
+    boundary_tree *new_btree;
+    new_btree = this->bt1->merge(this->bt2, this->direction);
+    return new_btree;
 }
