@@ -16,6 +16,7 @@
 #include "maxtree.hpp"
 #include "maxtree_node.hpp"
 #include "boundary_tree.hpp"
+#include "const_enum_define.hpp"
 
 #include "utils.hpp"
 
@@ -311,16 +312,84 @@ uint64_t get_task_index(boundary_tree_task *t){
     return t->index;
 }
 
-void worker_local_merge(bag_of_tasks<boundary_tree_task *> &merge_task){
-    bool got_task;
-    boundary_tree_task *btt;
-    while(merge_task.is_running()){
-        got_task = merge_task.get_task(btt);
-        auto index = merge_task.search_by_field<uint64_t>(btt->index, get_task_index);
-        std::cout << "task index:" << btt->index << "\n";
+void worker_search_pair(bag_of_tasks<merge_btrees_task *> &merge_bag, bag_of_tasks<boundary_tree_task *> &btrees_bag){
+    boundary_tree_task *btt, *n, *aux;
+    uint64_t idx;
+    enum neighbor_direction nb_direction;
+    while(btrees_bag.is_running()){
+        std::cout << "total of tasks:" << btrees_bag.get_num_task() << "\n";
+        bool got = btrees_bag.get_task(btt);
+        if(got){
+            // btt->bt->print_tree();
+            if(btt->bt->grid_j % 2 == 0){
+                nb_direction = NB_AT_RIGHT;
+            }else{
+                nb_direction = NB_AT_LEFT;
+            }
+            idx = btt->neighbor_idx(nb_direction);
+            try{
+                // auto pos = btrees_bag.search_by_field<uint64_t>(idx,get_task_index);
+                auto got_n = btrees_bag.get_task_by_field<uint64_t>(n, idx, get_task_index);
+                //Olhar melhor essa questao do swap, falha de segmentacao por bordas estarem erradas.
+                if(got_n){
+                    if(btt->bt->grid_j % 2 != 0){
+                        std::cout << "swap btt with n\n";
+                        aux = btt;
+                        btt = n;
+                        n = aux;
+                    }
+                    // std::cout << "+++++++++++++++ neighbor task of " << btt->index << " has index: " << n->index << "\n";
+                    // n->bt->print_tree();
+                    if(n->bt->grid_i == btt->bt->grid_i){
+                        std::cout << "btt " << btt->bt->grid_i << "," << btt->bt->grid_j << "   " 
+                                  << "n: " << n->bt->grid_i << "," << n->bt->grid_j << "\n";
+                        merge_bag.insert_task(new merge_btrees_task(btt->bt, n->bt, MERGE_VERTICAL_BORDER));
+                    }
+                }
+            }catch(std::runtime_error &e){
+                std::cout << "\nneighbor task of " << btt->index << " not found\n";
+            }catch(std::out_of_range &r){
+                std::cerr << "try to access an out of range element\n";
+            }
+        }
+
     }
 }
-
+void worker_merge_local(bag_of_tasks<merge_btrees_task *> &merge_bag, bag_of_tasks<boundary_tree_task *> &btrees_bag){
+    merge_btrees_task *mbt;
+    boundary_tree_task *btt;
+    int32_t dist;
+    while(merge_bag.is_running()){
+        bool got_mt = merge_bag.get_task(mbt);
+        std::cout << "task will merge: " << mbt->bt1->grid_i << ", " << mbt->bt1->grid_j << " with "
+                                         << mbt->bt2->grid_i << ", " << mbt->bt2->grid_j << "\n";
+        
+        if(got_mt){
+            if(verbose){
+                std::string s = "-------------------TREE 1------------------\n";
+                // mbt->bt1->print_tree();
+                s+=mbt->bt1->border_to_string();
+                s+=mbt->bt1->lroot_to_string();
+                s+="\n-----------------------------------------------\n";
+                std::cout << "-------------------TREE 2------------------\n";
+                // mbt->bt2->print_tree();
+                s+=mbt->bt2->border_to_string();
+                s+=mbt->bt2->lroot_to_string();
+                s+="\n-----------------------------------------------\n";
+                std::cout << s;
+            }
+            if(mbt->direction = MERGE_VERTICAL_BORDER){
+                dist = mbt->bt2->grid_i - mbt->bt1->grid_i;
+            }else{
+                dist = mbt->bt2->grid_j - mbt->bt1->grid_j;
+            }
+            boundary_tree *nt = mbt->execute();
+            if(verbose) nt->print_tree();
+            btt = new boundary_tree_task(nt, dist*2);
+            btrees_bag.insert_task(btt);
+        }
+    }
+}
 int main(int argc, char *argv[]){
     vips::VImage *in;
     std::string out_name, out_ext;
@@ -393,14 +462,13 @@ int main(int argc, char *argv[]){
 
 
     //task to get pairs of boundary trees.
+
     boundary_tree_task *btt, *n, *aux;
-    bound_bag_source = &boundary_bag;
-    bound_bag_dest = &boundary_bag_aux;
     uint64_t idx;
     enum neighbor_direction nb_direction;
-    while(bound_bag_source->get_num_task()){
-        std::cout << "total of tasks:" << bound_bag_source->get_num_task() << "\n";
-        bool got = bound_bag_source->get_task(btt);
+    while(boundary_bag.get_num_task()){
+        std::cout << "total of tasks:" << boundary_bag.get_num_task() << "\n";
+        bool got = boundary_bag.get_task(btt);
         if(got){
             // btt->bt->print_tree();
             if(btt->bt->grid_j % 2 == 0){
@@ -411,7 +479,7 @@ int main(int argc, char *argv[]){
             idx = btt->neighbor_idx(nb_direction);
             try{
                 // auto pos = boundary_bag.search_by_field<uint64_t>(idx,get_task_index);
-                auto got_n = bound_bag_source->get_task_by_field<uint64_t>(n, idx, get_task_index);
+                auto got_n = boundary_bag.get_task_by_field<uint64_t>(n, idx, get_task_index);
                 //Olhar melhor essa questao do swap, falha de segmentacao por bordas estarem erradas.
                 if(got_n){
                     if(btt->bt->grid_j % 2 != 0){
@@ -436,7 +504,10 @@ int main(int argc, char *argv[]){
         }
         std::cout << "====================================================================================\n";
     }
-    merge_bag.start();
+
+
+
+
     merge_btrees_task *mbt;
     while(merge_bag.get_num_task()){
         bool got_mt = merge_bag.get_task(mbt);
@@ -455,7 +526,6 @@ int main(int argc, char *argv[]){
 
         }
     }
-
 
 
 }

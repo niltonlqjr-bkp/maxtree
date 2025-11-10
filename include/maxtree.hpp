@@ -5,6 +5,7 @@
 #include <vector>
 #include <cinttypes>
 #include <sysexits.h>
+#include "const_enum_define.hpp"
 
 #ifndef __MAXTREE_HPP__
 #define __MAXTREE_HPP__

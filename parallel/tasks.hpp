@@ -1,6 +1,7 @@
 #include <vips/vips8>
 #include <utility>
 
+#include "const_enum_define.hpp"
 #include "maxtree.hpp"
 #include "boundary_tree.hpp"
 #ifndef __TASKS_HPP__
@@ -11,9 +12,6 @@
 
 
 
-enum neighbor_direction{NB_AT_BOTTOM = 0, NB_AT_RIGHT = 1, NB_AT_TOP = 2, NB_AT_LEFT = 3};
-
-static const std::vector<std::pair<int32_t, int32_t>> NEIGHBOR_DIRECTION = {{1,0}, {0,1}, {-1,0}, {0,-1}};
 
 class comparable_task{
     public:

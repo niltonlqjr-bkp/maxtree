@@ -4,25 +4,18 @@
 #include <iostream>
 #include <unordered_map>
 #include <sysexits.h>
+#include "const_enum_define.hpp"
 
-#ifndef __BOUNDARY_TREE__
-#define __BOUNDARY_TREE__
+#ifndef __BOUNDARY_TREE_HPP__
+#define __BOUNDARY_TREE_HPP__
 
 #include "maxtree_node.hpp"
 #include "utils.hpp"
+#
 
-#define NO_BORDER_LEVELROOT -1
-#define NO_BOUNDARY_PARENT -1
-#define NULL_IDX -1
-
-#define Tboundary_tree_lroot std::unordered_map<uint64_t, boundary_node*>
 class boundary_node;
 class boundary_tree;
 
-
-enum boundary_tree_field{
-    BOUNDARY_PARENT, MAXTREE_IDX, BOUNDARY_GVAL, BOUNDARY_BORDER_LR, BOUNDARY_GLOBAL_IDX, BOUNDARY_LABEL, BOUNDARY_ATTR, BOUNDARY_ALL_FIELDS
-};
 
 
 class boundary_node{
