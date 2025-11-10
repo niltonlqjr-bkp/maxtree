@@ -164,7 +164,7 @@ void wait_empty(bag_of_tasks<T> &b, uint64_t num_th){
     std::cout << "wait end\n";
     uint64_t x=0;
     while(true){
-        if(verbose) std::cout << "wait empty " << x++ << "\n";
+        // if(verbose) std::cout << "wait empty " << x++ << "\n";
         b.wait_empty();
         if(b.is_running() && b.empty() && b.num_waiting() == num_th){
             b.notify_end();
@@ -309,13 +309,13 @@ uint64_t get_task_index(boundary_tree_task *t){
     return t->index;
 }
 
-void worker_search_pair(bag_of_tasks<boundary_tree_task *> &btrees_bag, bag_of_tasks<merge_btrees_task *> &merge_bag){
+void worker_search_pair(bag_of_tasks<boundary_tree_task *> *btrees_bag, bag_of_tasks<merge_btrees_task *> *merge_bag){
     boundary_tree_task *btt, *n, *aux;
     uint64_t idx;
     enum neighbor_direction nb_direction;
-    while(btrees_bag.is_running()){
-        std::cout << "total of tasks:" << btrees_bag.get_num_task() << "\n";
-        bool got = btrees_bag.get_task(btt);
+    while(btrees_bag->is_running()){
+        std::cout << "total of tasks:" << btrees_bag->get_num_task() << "\n";
+        bool got = btrees_bag->get_task(btt);
         if(got){
             // btt->bt->print_tree();
             if(btt->bt->grid_j % 2 == 0){
@@ -323,13 +323,14 @@ void worker_search_pair(bag_of_tasks<boundary_tree_task *> &btrees_bag, bag_of_t
             }else{
                 nb_direction = NB_AT_LEFT;
             }
-            if(btt->bt->grid_j + NEIGHBOR_DIRECTION[nb_direction].first * btt->next_merge_distance < GRID_LINE_SIZE){
+            uint32_t pair_pos = btt->bt->grid_j + NEIGHBOR_DIRECTION[nb_direction].first * btt->next_merge_distance;
+            if(pair_pos < GRID_LINE_SIZE && pair_pos >=0){
                 idx = btt->neighbor_idx(nb_direction);
                 
                 try{
                     // auto pos = btrees_bag.search_by_field<uint64_t>(idx,get_task_index);
-                    auto got_n = btrees_bag.get_task_by_field<uint64_t>(n, idx, get_task_index);
-                    //Olhar melhor essa questao do swap, falha de segmentacao por bordas estarem erradas.
+                    auto got_n = btrees_bag->get_task_by_field<uint64_t>(n, idx, get_task_index);
+                    
                     if(got_n){
                         if(btt->bt->grid_j % 2 != 0){
                             std::cout << "swap btt with n\n";
@@ -342,10 +343,10 @@ void worker_search_pair(bag_of_tasks<boundary_tree_task *> &btrees_bag, bag_of_t
                         if(n->bt->grid_i == btt->bt->grid_i && std::abs(btt->next_merge_distance) == std::abs(n->next_merge_distance)){
                             std::cout << "btt " << btt->bt->grid_i << "," << btt->bt->grid_j << "   " 
                                     << "n: " << n->bt->grid_i << "," << n->bt->grid_j << "\n";
-                            merge_bag.insert_task(new merge_btrees_task(btt->bt, n->bt, MERGE_VERTICAL_BORDER));
+                            merge_bag->insert_task(new merge_btrees_task(btt->bt, n->bt, MERGE_VERTICAL_BORDER));
                         }else{
-                            merge_bag.insert_task(new merge_btrees_task(btt->bt, NULL, MERGE_VERTICAL_BORDER));
-                            merge_bag.insert_task(new merge_btrees_task(n->bt, NULL, MERGE_VERTICAL_BORDER));
+                            merge_bag->insert_task(new merge_btrees_task(btt->bt, NULL, MERGE_VERTICAL_BORDER));
+                            merge_bag->insert_task(new merge_btrees_task(n->bt, NULL, MERGE_VERTICAL_BORDER));
                         }
                     }
                 }catch(std::runtime_error &e){
@@ -354,18 +355,19 @@ void worker_search_pair(bag_of_tasks<boundary_tree_task *> &btrees_bag, bag_of_t
                     std::cerr << "try to access an out of range element\n";
                 }
             }else{
-                merge_bag.insert_task(new merge_btrees_task(btt->bt, NULL, MERGE_VERTICAL_BORDER));
+                merge_bag->insert_task(new merge_btrees_task(btt->bt, NULL, MERGE_VERTICAL_BORDER));
             }
         }
     }
 }
-void worker_merge_local(bag_of_tasks<merge_btrees_task *> &merge_bag, bag_of_tasks<boundary_tree_task *> &btrees_bag){
+void worker_merge_local(bag_of_tasks<merge_btrees_task *> *merge_bag, bag_of_tasks<boundary_tree_task *> *btrees_bag){
     merge_btrees_task *mbt;
     boundary_tree_task *btt;
     boundary_tree *nt;
     int32_t dist;
-    while(merge_bag.is_running()){
-        bool got_mt = merge_bag.get_task(mbt);
+    while(merge_bag->is_running()){
+
+        bool got_mt = merge_bag->get_task(mbt);
         std::cout << "task will merge: " << mbt->bt1->grid_i << ", " << mbt->bt1->grid_j << " with "
                                          << mbt->bt2->grid_i << ", " << mbt->bt2->grid_j << "\n";
         
@@ -385,17 +387,19 @@ void worker_merge_local(bag_of_tasks<merge_btrees_task *> &merge_bag, bag_of_tas
             }
             if(mbt->bt1 != NULL && mbt->bt2 !=NULL){
                 if(mbt->direction = MERGE_VERTICAL_BORDER){
-                    dist = mbt->bt2->grid_i - mbt->bt1->grid_i;
-                }else{
                     dist = mbt->bt2->grid_j - mbt->bt1->grid_j;
+                }else{
+                    dist = mbt->bt2->grid_i - mbt->bt1->grid_i;
                 }
                 nt = mbt->execute();
                 if(verbose) nt->print_tree();
             }else{
                 nt = (boundary_tree *) ((uintptr_t) mbt->bt1 | (uintptr_t) mbt->bt2); // one of the trees is null, so, or bitwise will be the other one
             }
+            std::cout << "nt grid:" << nt->grid_i << "," << nt->grid_j <<"\n";
             btt = new boundary_tree_task(nt, dist*2);
-            btrees_bag.insert_task(btt);
+            std::cout << "new distance " << dist*2 <<"\n";
+            btrees_bag->insert_task(btt);
         }
     }
 }
@@ -417,7 +421,7 @@ int main(int argc, char *argv[]){
     bag_of_tasks<boundary_tree_task *> boundary_bag, boundary_bag_aux, *bound_bag_source, *bound_bag_dest;
     bag_of_tasks<merge_btrees_task *> merge_bag;
 
-    std::vector<std::thread*> threads_g1, threads_g2;
+    std::vector<std::thread*> threads_g1, threads_g2, threads_g3, threads_g4;
 
     verify_args(argc, argv);
     read_config(argv[2], out_name, out_ext, glines, gcolumns, lambda, pixel_connection, colored, num_th);
@@ -431,7 +435,7 @@ int main(int argc, char *argv[]){
     // check https://github.com/libvips/libvips/discussions/4063 for improvements on read
     in = new vips::VImage(
                 vips::VImage::new_from_file(argv[1],
-                VImage::option ()->set ("access",  VIPS_ACCESS_SEQUENTIAL)
+                VImage::option()->set ("access",  VIPS_ACCESS_SEQUENTIAL)
             )
         );
     std::cout << "number of threads "<< num_th << "\n";  
@@ -474,24 +478,29 @@ int main(int argc, char *argv[]){
         delete threads_g1[i];
     } 
     threads_g1.erase(threads_g1.begin(),threads_g1.end());
-    // std::thread thr(worker_local_merge, std::ref(boundary_bag));
-
-    // wait_empty<boundary_tree_task *>(boundary_bag, num_th);
-
 
     //ver possibilidade de transformar as bags em filas hierarquicas
 
     //task to get pairs of boundary trees.
-    for(uint32_t i=0; i<num_th;i++){
-       threads_g1.push_back(new std::thread(worker_search_pair, std::ref(boundary_bag), std::ref(merge_bag) ));
-    }
 
     for(uint32_t i=0; i<num_th;i++){
-       threads_g1.push_back(new std::thread(worker_merge_local, std::ref(merge_bag), std::ref(boundary_bag) ));
+    //    threads_g1.push_back(new std::thread(worker_search_pair, std::ref(boundary_bag), std::ref(merge_bag) ));
+       threads_g1.push_back(new std::thread(worker_search_pair, &boundary_bag, &merge_bag ));
+    }
+    boundary_bag.start();
+    merge_bag.start();
+
+    for(uint32_t i=0; i<num_th;i++){
+    //    threads_g2.push_back(new std::thread(worker_merge_local, std::ref(merge_bag), std::ref(boundary_bag) ));
+       threads_g2.push_back(new std::thread(worker_merge_local, &merge_bag, &boundary_bag ));
     }
 
-    wait_empty<boundary_tree_task *>(boundary_bag, num_th);
-    wait_empty<merge_btrees_task *>(merge_bag, num_th);
+     wait_empty<boundary_tree_task *>(boundary_bag, num_th);
+    // std::cout << "boundary end\n";
+     wait_empty<merge_btrees_task *>(merge_bag, num_th);
+    // std::cout << "merge bag end\n";
+
+    
 /* 
     boundary_tree_task *btt, *n, *aux;
     uint64_t idx;
