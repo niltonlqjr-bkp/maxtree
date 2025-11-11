@@ -187,13 +187,15 @@ uint64_t boundary_tree_task::neighbor_idx(enum neighbor_direction direction){
 
 
 merge_btrees_task::merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum merge_directions direction, int32_t distance){
-    if(direction == MERGE_VERTICAL_BORDER){
-        if(t1->grid_j+distance != t2->grid_j){
-            throw std::runtime_error("non neighbours merge");
-        }
-    }else{
-        if(t1->grid_i+distance != t2->grid_i){
-            throw std::runtime_error("non neighbours merge");
+    if(t1 != t2){
+        if(direction == MERGE_VERTICAL_BORDER){
+            if(t1->grid_j+distance != t2->grid_j){
+                throw std::runtime_error("non neighbours merge");
+            }
+        }else{
+            if(t1->grid_i+distance != t2->grid_i){
+                throw std::runtime_error("non neighbours merge");
+            }
         }
     }
     this->bt1 = t1;
