@@ -86,4 +86,7 @@ void print_pq(std::priority_queue<maxtree_node*> pq);
 
 uint64_t get_levroot_pair_idx(std::unordered_map<int64_t, int64_t> &lrp, uint64_t idx);
 
+int64_t int_pow(int64_t base, int64_t exp);
+
+
 #endif

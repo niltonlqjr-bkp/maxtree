@@ -8,11 +8,6 @@
 #define __TASKS_HPP__
 // classes that defines the procedures to compute a tile maxtree
 
-// #define GRID_LINE_SIZE 
-
-
-
-
 class comparable_task{
     public:
         virtual uint64_t size() = 0;
@@ -43,13 +38,13 @@ class maxtree_task: public comparable_task{
 
 class boundary_tree_task: public comparable_task{
     public:
-        uint64_t index;
+        std::pair<uint32_t, uint32_t> index;
         boundary_tree *bt;
         int32_t next_merge_distance;
         boundary_tree_task(maxtree_task *t, int32_t next_merge_distance=1);
         boundary_tree_task(boundary_tree *t, int32_t next_merge_distance=1);
         uint64_t size();
-        uint64_t neighbor_idx(enum neighbor_direction direction);
+        std::pair<uint32_t, uint32_t> neighbor_idx(enum neighbor_direction direction);
     
 };
 

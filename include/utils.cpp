@@ -8,7 +8,14 @@ std::string terminal_color_string(int color){
     return COLORS[BLACK];
 }
 
+int64_t int_pow(int64_t base, int64_t exp){
+    int64_t r=1;
+    while(exp--){
+        r*=base;
+    }
+    return r;
 
+}
 
 void label_components(std::vector<maxtree_node*> *mt){
     for(auto p: *mt){

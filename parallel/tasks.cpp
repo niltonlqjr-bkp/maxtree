@@ -2,13 +2,13 @@
 
 // extern std::vector<std::pair<int32_t, int32_t>> NEIGHBOR_DIRECTION;
 
-#ifndef __GRID_LINE_SIZE__
-#define __GRID_LINE_SIZE__
+#ifndef __GRID_DIMS__
+#define __GRID_DIMS__
 
-uint32_t GRID_LINE_SIZE;
+std::pair<uint32_t, uint32_t> GRID_DIMS;
 
 #else
-extern uint32_t GRID_LINE_SIZE;
+extern std::pair<uint32_t, uint32_t> GRID_DIMS;
 #endif
 
 bool operator<(comparable_task &l, comparable_task &r){
@@ -79,8 +79,6 @@ void input_tile_task::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolu
         noborder_rl = num_w_ceil + this->j * w_trunc;
     }
 
-
-
     std::vector<bool> borders(4,false);
     
     lines_inc = this->i < num_h_ceil ? h_trunc +1 : h_trunc;
@@ -117,9 +115,6 @@ void input_tile_task::prepare(vips::VImage *img, uint32_t glines, uint32_t gcolu
 
     // create the class for tile representation
     this->tile = new maxtree(borders, this->tile_lines, this->tile_columns, this->i, this->j);
-    
-    
-    
 }
 
 void input_tile_task::read_tile(vips::VImage *img){
@@ -134,12 +129,9 @@ void input_tile_task::read_tile(vips::VImage *img){
     
     if(verbose) std::cout << "reding:"<< this->i << ", " << this->j << " real top:" << this->reg_top << " real left: " << this->reg_left 
                           << " lines:" << this->tile_lines << " cols:" << this->tile_columns << "\n";
-    
-    
 
     this->tile->fill_from_VRegion(reg, this->reg_top, this->reg_left, h, w);
     vips_region_invalidate(reg.get_region());
-
 }
 
 // maxtree_task class
@@ -158,33 +150,30 @@ uint64_t maxtree_task::size(){
     return this->mt->get_size();
 }
 
-
 //boundary_task class
 
 boundary_tree_task::boundary_tree_task(maxtree_task *t, int32_t next_merge_distance){
     this->bt = t->mt->get_boundary_tree();
-    this->index = this->bt->grid_i * GRID_LINE_SIZE + this->bt->grid_j;
+    this->index = std::make_pair(this->bt->grid_i, this->bt->grid_j);
     this->next_merge_distance = next_merge_distance;
 }
 
 boundary_tree_task::boundary_tree_task(boundary_tree *t, int32_t next_merge_distance){
     this->bt = t;
-    this->index = this->bt->grid_i * GRID_LINE_SIZE + this->bt->grid_j;
+    this->index = std::make_pair(this->bt->grid_i, this->bt->grid_j);
     this->next_merge_distance = next_merge_distance;
 }
-
 
 uint64_t boundary_tree_task::size(){
     return this->bt->boundary_tree_lroot->size();
     // return this->index;
 }
 
-uint64_t boundary_tree_task::neighbor_idx(enum neighbor_direction direction){
+std::pair<uint32_t, uint32_t> boundary_tree_task::neighbor_idx(enum neighbor_direction direction){
     int32_t i_desloc = NEIGHBOR_DIRECTION[direction].first * this->next_merge_distance;
     int32_t j_desloc = NEIGHBOR_DIRECTION[direction].second * this->next_merge_distance;
-    return (this->bt->grid_i + i_desloc) * GRID_LINE_SIZE + this->bt->grid_j + j_desloc; 
+    return std::make_pair(this->bt->grid_i + i_desloc, this->bt->grid_j + j_desloc); 
 }
-
 
 merge_btrees_task::merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum merge_directions direction, int32_t distance){
     if(t1 != t2){

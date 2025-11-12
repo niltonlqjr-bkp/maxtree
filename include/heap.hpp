@@ -27,6 +27,28 @@ class max_heap{
         int size();
 };
 
+template<typename T>
+class min_heap{
+    private:
+        std::vector<T> data;
+        int parent_idx(int idx);
+        int right_child_idx(int idx);
+        int left_child_idx(int idx);
+        void min_heapfy(int idx);
+        void build_min_heap();
+        void down_idx(int idx);
+
+    public:
+        
+        min_heap(std::vector<T> ini = std::vector<T>());
+        ~min_heap();
+        void insert(T value);
+        T at(int idx);
+        void remove_at(int idx);
+        void print();
+        int size();
+};
+
 #include "heap.tpp"
 
 #endif
