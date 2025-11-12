@@ -53,7 +53,7 @@ class merge_btrees_task: public comparable_task{
         //int32_t distance;
         boundary_tree *bt1,*bt2;
         enum merge_directions direction;
-        merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum merge_directions direction, int32_t distance=1);
+        merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum merge_directions direction, int32_t distance);
         uint64_t size();
         boundary_tree *execute();
 };

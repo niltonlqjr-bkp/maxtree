@@ -179,11 +179,11 @@ merge_btrees_task::merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum 
     if(t1 != t2){
         if(direction == MERGE_VERTICAL_BORDER){
             if(t1->grid_j+distance != t2->grid_j){
-                throw std::runtime_error("non neighbours merge");
+                throw std::runtime_error("non neighbours merge inside constructor merge_btrees_task\n");
             }
         }else{
             if(t1->grid_i+distance != t2->grid_i){
-                throw std::runtime_error("non neighbours merge");
+                throw std::runtime_error("non neighbours merge inside constructor merge_btrees_task\n");
             }
         }
     }
