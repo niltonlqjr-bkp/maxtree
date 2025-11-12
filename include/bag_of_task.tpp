@@ -42,7 +42,10 @@ bool bag_of_tasks<Task>::get_task(Task &ret){
 
     while(this->num_task <= 0 && this->running){
         this->waiting++;
+        // std::cout << "wait task\n";
         this->has_task.wait(l);
+        // std::cout << "wait task\n";
+
     }
     if(this->num_task > 0){
         ret = this->tasks->front();
@@ -74,13 +77,15 @@ template <class Task>
 template <class T> 
 bool bag_of_tasks<Task>::get_task_by_field(Task &ret, T value, T getter(Task)){
     std::unique_lock<std::mutex> l(this->lock);
+    Task t;
     try{   
-        
-        for(int i=0; i<this->tasks->size(); i++){
-            Task t = this->tasks->at(i);
+        // std::deque<Task>::iterator it;
+        for(auto it=this->tasks->begin(); it != this->tasks->end(); it++ ){
+            t = *it; 
             if(value == getter(t)){
                 ret = t;
                 this->num_task--;
+                this->tasks->erase(it);
                 this->no_task.notify_all();
                 return true;
             }

@@ -22,6 +22,16 @@ bool operator<(comparable_task &l, comparable_task &r){
  bool operator==(comparable_task &l,  comparable_task &r){
     return l.size() == r.size();
 }
+
+/* const char *task_exception::what() const {
+    return this->msg.c_str();
+}
+
+task_exception::task_exception(std::string &m){
+    this->msg = m;
+}
+ */
+
 // Input tile task
 input_tile_task::input_tile_task(uint32_t i, uint32_t j, uint32_t nb_rt, uint32_t nb_rl){
     this->i = i;
@@ -198,6 +208,7 @@ uint64_t merge_btrees_task::size(){
 
 boundary_tree *merge_btrees_task::execute(){
     boundary_tree *new_btree;
+
     new_btree = this->bt1->merge(this->bt2, this->direction);
     return new_btree;
 }

@@ -1,17 +1,21 @@
 #include <vips/vips8>
 #include <utility>
+#include <exception>
+#include <string>
 
 #include "const_enum_define.hpp"
 #include "maxtree.hpp"
 #include "boundary_tree.hpp"
 #ifndef __TASKS_HPP__
 #define __TASKS_HPP__
+
 // classes that defines the procedures to compute a tile maxtree
 
 class comparable_task{
     public:
         virtual uint64_t size() = 0;
 };
+
 
 
 class input_tile_task: public comparable_task{
