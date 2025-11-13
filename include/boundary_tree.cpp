@@ -85,6 +85,7 @@ boundary_tree::boundary_tree(uint32_t h, uint32_t w, uint32_t grid_i, uint32_t g
 
 boundary_tree::~boundary_tree(){
     // delete borders
+
     for(uint32_t i=0;i < this->border_elements->size(); i++){
         // for(auto e: *this->border_elements->at(i)){
             // delete e;

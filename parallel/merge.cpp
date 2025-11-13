@@ -157,7 +157,7 @@ void read_config(char conf_name[],
 void read_sequential_file(bag_of_tasks<input_tile_task*> &bag, vips::VImage *in, uint32_t glines, uint32_t gcolumns);
 bool inside_rectangle(std::pair<uint32_t, uint32_t> c, std::pair<uint32_t, uint32_t> r);
 void worker_maxtree_calc(bag_of_tasks<input_tile_task *> &bag_tiles, bag_of_tasks<maxtree_task *> &max_trees);
-void worker_get_boundary_tree(bag_of_tasks<maxtree_task *> &maxtrees, bag_of_tasks<boundary_tree_task *> &boundary_trees);
+void worker_get_boundary_tree(bag_of_tasks<maxtree_task *> &maxtrees, bag_of_tasks<boundary_tree_task *> &boundary_trees, bag_of_tasks<maxtree_task *> &maxtree_dest);
 std::pair<uint32_t, uint32_t> get_task_index(boundary_tree_task *t);
 void worker_search_pair(bag_of_tasks<boundary_tree_task *> &btrees_bag, bag_of_tasks<merge_btrees_task *> &merge_bag);
 void worker_merge_local(bag_of_tasks<merge_btrees_task *> &merge_bag, bag_of_tasks<boundary_tree_task *> &btrees_bag);
@@ -316,19 +316,24 @@ void worker_maxtree_calc(bag_of_tasks<input_tile_task *> &bag_tiles, bag_of_task
     }
 }
 
-void worker_get_boundary_tree(bag_of_tasks<maxtree_task *> &maxtrees, bag_of_tasks<boundary_tree_task *> &boundary_trees){
+void worker_get_boundary_tree(bag_of_tasks<maxtree_task *> &maxtrees,
+                              bag_of_tasks<boundary_tree_task *> &boundary_trees, 
+                              bag_of_tasks<maxtree_task *>  &maxtree_dest){
     bool got_task;
     maxtree_task *mtt;
     boundary_tree_task *btt;
+    bag_of_tasks<maxtree_task *> maxtree_aux;
     while(maxtrees.is_running()){
         got_task = maxtrees.get_task(mtt);
-        std::string stmt = std::to_string(mtt->mt->grid_i) + "," + std::to_string(mtt->mt->grid_j) +"\n";
-        stmt += mtt->mt->to_string(GLOBAL_IDX,false) + "\n";
-        // std::cout << stmt;
         if(got_task){
+            std::string stmt = std::to_string(mtt->mt->grid_i) + "," + std::to_string(mtt->mt->grid_j) +"\n";
+            stmt += mtt->mt->to_string(GLOBAL_IDX,false) + "\n";
+            // std::cout << stmt;
             btt = new boundary_tree_task(mtt, std::make_pair<uint32_t,u_int32_t>(0,1));
             boundary_trees.insert_task(btt);
+            maxtree_dest.insert_task(mtt);
         }
+
     }
 
 }
@@ -476,7 +481,9 @@ void worker_merge_local(bag_of_tasks<merge_btrees_task *> &merge_bag, bag_of_tas
 }
 
 
+void worker_update(bag_of_tasks<maxtree_task *> &src, bag_of_tasks<maxtree_task *> &dest){
 
+}
 
 int main(int argc, char *argv[]){
     vips::VImage *in;
@@ -492,7 +499,7 @@ int main(int argc, char *argv[]){
     input_tile_task *tile;
     
     bag_of_tasks<input_tile_task*> bag_tiles;
-    bag_of_tasks<maxtree_task*> maxtree_tiles;
+    bag_of_tasks<maxtree_task*> maxtree_tiles_pre_btree, maxtree_tiles;
     bag_of_tasks<boundary_tree_task *> boundary_bag, boundary_bag_aux;
     bag_of_tasks<merge_btrees_task *> merge_bag;
 
@@ -521,21 +528,23 @@ int main(int argc, char *argv[]){
 
     bag_tiles.start();
     for(uint32_t i=0; i<num_th; i++){
-        threads_g1.push_back(new std::thread(worker_maxtree_calc, std::ref(bag_tiles), std::ref(maxtree_tiles)));
+        threads_g1.push_back(new std::thread(worker_maxtree_calc, std::ref(bag_tiles), std::ref(maxtree_tiles_pre_btree)));
     }
     maxtree_task *mtt;
     wait_empty<input_tile_task *>(bag_tiles, num_th);
     
     for(uint32_t i=0; i<num_th; i++){
         threads_g1[i]->join();
+        delete threads_g1[i];
     } 
-    std::cout << "max_trees_tiles.get_num_task:" << maxtree_tiles.get_num_task() << "\n";
+
+    std::cout << "max_trees_tiles.get_num_task:" << maxtree_tiles_pre_btree.get_num_task() << "\n";
     
-    maxtree_tiles.start();
+    maxtree_tiles_pre_btree.start();
     for(uint32_t i=0; i<num_th;i++){
-       threads_g2.push_back(new std::thread(worker_get_boundary_tree, std::ref(maxtree_tiles), std::ref(boundary_bag) ));
+       threads_g2.push_back(new std::thread( worker_get_boundary_tree, std::ref(maxtree_tiles_pre_btree), std::ref(boundary_bag), std::ref(maxtree_tiles) ));
     }
-    wait_empty<maxtree_task *>(maxtree_tiles, num_th);
+    wait_empty<maxtree_task *>(maxtree_tiles_pre_btree, num_th);
 
     for(uint32_t i=0; i<num_th; i++){
         threads_g2[i]->join();
@@ -576,11 +585,14 @@ int main(int argc, char *argv[]){
     for(uint32_t i=0; i<num_th; i++){
         threads_g3[i]->join();
     } 
-    std::cout << "main 2\n";
     for(uint32_t i=0; i<num_th; i++){
         threads_g4[i]->join();
     } 
-    std::cout << "main 3\n";
+    std::cout << "merge done\n";
+
+    for(uint32_t i =0; i<num_th; i++){
+
+    }
 
     // wait_empty<boundary_tree_task *>(boundary_bag, num_th);
     // std::cout << "boundary end\n";

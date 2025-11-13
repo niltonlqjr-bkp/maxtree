@@ -7,7 +7,7 @@
 # main server 
 server=10.1.1.2
 # number of threads for the process 
-threads=6
+threads=8
 # grid lines
 glines=8
 # grid columns

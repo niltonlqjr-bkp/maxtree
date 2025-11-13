@@ -210,5 +210,7 @@ boundary_tree *merge_btrees_task::execute(){
     boundary_tree *new_btree;
 
     new_btree = this->bt1->merge(this->bt2, this->direction);
+    delete this->bt1;
+    delete this->bt2;
     return new_btree;
 }
