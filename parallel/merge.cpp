@@ -561,17 +561,17 @@ int main(int argc, char *argv[]){
 
     std::string o, __void;
 
-    while(boundary_bag.is_running() || merge_bag.is_running()){
-        o = "boundary bag: ";
-        o +=  std::to_string(boundary_bag.get_num_task());
-        o += " merge_bag: ";
-        o += std::to_string(merge_bag.get_num_task());
-        o += "\n";
-        std::cout << o;
+    // while(boundary_bag.is_running() || merge_bag.is_running()){
+    //     o = "boundary bag: ";
+    //     o +=  std::to_string(boundary_bag.get_num_task());
+    //     o += " merge_bag: ";
+    //     o += std::to_string(merge_bag.get_num_task());
+    //     o += "\n";
+    //     std::cout << o;
         
-        sleep(1);
+    //     sleep(1);
 
-    } 
+    // } 
 
     for(uint32_t i=0; i<num_th; i++){
         threads_g3[i]->join();
