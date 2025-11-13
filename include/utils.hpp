@@ -70,6 +70,8 @@ void print_stack(std::stack<maxtree_node*> s);
 
 bool is_blank(std::string s, std::vector<char> b = {' ', '\t', '\n', '\r'});
 
+std::string int_pair_to_string(std::pair<uint32_t, uint32_t> &p);
+
 std::string ltrim(std::string s, const std::string b = std::string(" \t\n\r"));
 
 std::string rtrim(std::string s, const std::string b = std::string(" \t\n\r"));

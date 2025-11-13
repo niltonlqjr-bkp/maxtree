@@ -44,9 +44,9 @@ class boundary_tree_task: public comparable_task{
     public:
         std::pair<uint32_t, uint32_t> index;
         boundary_tree *bt;
-        int32_t next_merge_distance;
-        boundary_tree_task(maxtree_task *t, int32_t next_merge_distance=1);
-        boundary_tree_task(boundary_tree *t, int32_t next_merge_distance=1);
+        std::pair<uint32_t, uint32_t> nb_distance;
+        boundary_tree_task(maxtree_task *t, std::pair<uint32_t, uint32_t> nb_distance);
+        boundary_tree_task(boundary_tree *t, std::pair<uint32_t, uint32_t> nb_distance);
         uint64_t size();
         std::pair<uint32_t, uint32_t> neighbor_idx(enum neighbor_direction direction);
     
@@ -57,7 +57,7 @@ class merge_btrees_task: public comparable_task{
         //int32_t distance;
         boundary_tree *bt1,*bt2;
         enum merge_directions direction;
-        merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum merge_directions direction, int32_t distance);
+        merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum merge_directions direction, std::pair<uint32_t, uint32_t> distance);
         uint64_t size();
         boundary_tree *execute();
 };

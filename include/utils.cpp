@@ -88,6 +88,9 @@ std::string rtrim(std::string s, const std::string b){
     return s;
 }
 
+std::string int_pair_to_string(std::pair<uint32_t, uint32_t> &p){
+    return "(" + std::to_string(p.first) + ", " + std::to_string(p.second) + ")";
+}
 
 bool is_blank(std::string s, std::vector<char> b){
     for(int i=0; i<s.size(); i++){
