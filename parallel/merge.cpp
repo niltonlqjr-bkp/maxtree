@@ -349,21 +349,12 @@ void worker_search_pair(bag_of_tasks<boundary_tree_task *> &btrees_bag, bag_of_t
 
         bool got = btrees_bag.get_task(btt);
         if(got){
-            // btt->bt->print_tree();
-            merge_dir = MERGE_VERTICAL_BORDER;
-            change_dir = false;
-            // new_distance = btt->next_merge_distance;
-            if(btt->nb_distance.second >= GRID_DIMS.second ){
-                btt->nb_distance.second = 0;
-                if(btt->nb_distance.first >= GRID_DIMS.first){
-                    merge_bag.notify_end();
-                    btrees_bag.notify_end();
-                    continue;
-                }
-                // std::cout << s;
+            if(btt->nb_distance.first == 0){
+                merge_dir = MERGE_VERTICAL_BORDER;
+            }else if(btt->nb_distance.second == 0){
                 merge_dir = MERGE_HORIZONTAL_BORDER;
-                change_dir = true;
-                // new_distance = 1;
+            }else{
+                exit(EXIT_FAILURE);
             }
             s = "got tree: " + std::to_string(btt->bt->grid_i) + "," + std::to_string(btt->bt->grid_j) + 
                 " with distance: "+ int_pair_to_string(btt->nb_distance) +"\n";
@@ -389,6 +380,7 @@ void worker_search_pair(bag_of_tasks<boundary_tree_task *> &btrees_bag, bag_of_t
                     if(!got_n){
                         btrees_bag.insert_task(btt);
                     }else if (n->nb_distance == btt->nb_distance || change_dir){
+
                         if((merge_dir == MERGE_VERTICAL_BORDER && btt->bt->grid_j % int_pow(2,btt->nb_distance.second) != 0) ||
                            (merge_dir == MERGE_HORIZONTAL_BORDER && btt->bt->grid_i % int_pow(2,btt->nb_distance.first) != 0)){
                             // std::cout << "swap btt with n\n";
@@ -455,30 +447,27 @@ void worker_merge_local(bag_of_tasks<merge_btrees_task *> &merge_bag, bag_of_tas
                 s+="\n-----------------------------------------------\n";
                 // std::cout << s;
             }
-            // if(mbt->bt1 != mbt->bt2){
-            if(mbt->direction = MERGE_VERTICAL_BORDER){
-                dist.second = mbt->bt2->grid_j - mbt->bt1->grid_j * 2;
-                dist.first = 0;
-            }else{
-                dist.first = mbt->bt2->grid_i - mbt->bt1->grid_i *2;
-                dist.second = 0;
-            }
-            
-            s = "bt1:" + std::to_string(mbt->bt1->grid_i) + "," + std::to_string(mbt->bt1->grid_j);
-            s += " bt2:" + std::to_string(mbt->bt2->grid_i) + "," + std::to_string(mbt->bt2->grid_j) + " ";
-            s += "new distance: " + int_pair_to_string(dist) + "\n"; 
-            //std::cout << s;
-            s = "task will merge: " + std::to_string(mbt->bt1->grid_i) + ", " + std::to_string(mbt->bt1->grid_j) ;
-            s += " with " + std::to_string(mbt->bt2->grid_i) + ", " + std::to_string(mbt->bt2->grid_j) + "\n";
+            // if(mbt->bt1 != mbt->bt2){        
             // std::cout << s;
             nbt = mbt->execute();
 
-            
+            dist.second = (mbt->bt2->grid_j - mbt->bt1->grid_j) * 2;
+            dist.first = (mbt->bt2->grid_i - mbt->bt1->grid_i) * 2;
+            if(dist.second >= GRID_DIMS.second){
+                dist.first = 1;
+                dist.second = 0;
+            }else if(dist.first >= GRID_DIMS.first){
+                merge_bag.notify_end();
+                btrees_bag.notify_end();
+            }
+
             if(verbose) nbt->print_tree();
             btt = new boundary_tree_task(nbt, dist);
             btrees_bag.insert_task(btt);
-
-            s = " task inserted with index:" + std::to_string(btt->bt->grid_i) + ", " + std::to_string(btt->bt->grid_j);
+            
+            s = "task will merge: " + std::to_string(mbt->bt1->grid_i) + ", " + std::to_string(mbt->bt1->grid_j) ;
+            s += " with " + std::to_string(mbt->bt2->grid_i) + ", " + std::to_string(mbt->bt2->grid_j) + "---";
+            s += " task inserted with index:" + std::to_string(btt->bt->grid_i) + ", " + std::to_string(btt->bt->grid_j);
             s += " and distance " + int_pair_to_string(btt->nb_distance) + "\n";
             std::cout << s;
         }
