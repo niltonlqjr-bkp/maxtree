@@ -592,13 +592,25 @@ int main(int argc, char *argv[]){
     threads_g1.erase(threads_g1.begin(),threads_g1.end());
     threads_g2.erase(threads_g2.begin(),threads_g2.end());
 
+    maxtree_tiles.start();
     for(uint32_t i =0; i<num_th; i++){
         threads_g1.push_back(new std::thread( worker_update, std::ref(maxtree_tiles), std::ref(updated_trees),  btree_final_task->bt));
         
     }
+    wait_empty<maxtree_task*>(maxtree_tiles,num_th);
     for(uint32_t i=0; i<num_th; i++){
         threads_g1[i]->join();
         delete threads_g1[i];
-    } 
+    }
     std::cout << "update done\n";
+
+    
+    while(!updated_trees.empty()){
+        bool got = updated_trees.get_task(mtt);
+        if(got){
+            std::cout << mtt->mt->grid_i << "," << mtt->mt->grid_j << "\n";
+            std::cout << mtt->mt->to_string();
+        }
+    }
+    
 }
