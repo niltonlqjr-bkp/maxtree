@@ -21,6 +21,6 @@ gcolumns=8
 #atribute value to filter
 lambda=15
 
-output = saidas/output_8L8C
+output = saidas/8l8c/output
 
 output_ext=png

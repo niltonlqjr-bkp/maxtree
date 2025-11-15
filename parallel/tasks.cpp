@@ -170,7 +170,7 @@ boundary_tree_task::boundary_tree_task(maxtree_task *t, std::pair<uint32_t, uint
 
 boundary_tree_task::boundary_tree_task(boundary_tree *t, std::pair<uint32_t, uint32_t> nb_distance){
     this->bt = t;
-    this->index = std::make_pair(this->bt->grid_i, this->bt->grid_j);
+    this->index = std::make_pair(t->grid_i, t->grid_j);
     this->nb_distance = nb_distance;
 }
 
@@ -186,16 +186,11 @@ std::pair<uint32_t, uint32_t> boundary_tree_task::neighbor_idx(enum neighbor_dir
 }
 
 merge_btrees_task::merge_btrees_task(boundary_tree *t1, boundary_tree *t2, enum merge_directions direction, std::pair<uint32_t, uint32_t> distance){
-    if(t1 != t2){
-        if(direction == MERGE_VERTICAL_BORDER){
-            if(t1->grid_j+distance.second != t2->grid_j){
-                throw std::runtime_error("non neighbours merge inside constructor merge_btrees_task\n");
-            }
-        }else{
-            if(t1->grid_i+distance.first != t2->grid_i){
-                throw std::runtime_error("non neighbours merge inside constructor merge_btrees_task\n");
-            }
-        }
+    if(t1->grid_j+distance.second != t2->grid_j){
+        throw std::runtime_error("non neighbours merge inside constructor merge_btrees_task\n");
+    }
+    if(t1->grid_i+distance.first != t2->grid_i){
+        throw std::runtime_error("non neighbours merge inside constructor merge_btrees_task\n");
     }
     this->bt1 = t1;
     this->bt2 = t2;
@@ -210,7 +205,14 @@ boundary_tree *merge_btrees_task::execute(){
     boundary_tree *new_btree;
 
     new_btree = this->bt1->merge(this->bt2, this->direction);
+    new_btree->update_tree(new_btree);
+    new_btree->compress_path();
+    // delete this->bt1;
+    // delete this->bt2;
+    return new_btree;
+}
+
+merge_btrees_task::~merge_btrees_task(){
     delete this->bt1;
     delete this->bt2;
-    return new_btree;
 }

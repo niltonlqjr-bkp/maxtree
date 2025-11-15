@@ -1175,7 +1175,10 @@ boundary_tree *boundary_tree::merge(boundary_tree *t, enum merge_directions d, u
 
             if(v_t->size() != v_this->size()){
                 std::cerr << "invalid borders for tiles (" << this->grid_i << ", " << this->grid_j
-                          << ") and (" << merge_tree->grid_i  << ", " << merge_tree->grid_j << "\n";
+                          << ") size: " << v_this->size() 
+                          << " and (" << merge_tree->grid_i  << ", " << merge_tree->grid_j 
+                          << ") size: " << v_t->size()
+                          <<" doing a MERGE_HORIZONTAL_BORDER\n";
                 exit(EX_DATAERR);
             }     
         }else{
@@ -1192,8 +1195,11 @@ boundary_tree *boundary_tree::merge(boundary_tree *t, enum merge_directions d, u
             v_t = merge_tree->border_elements->at(LEFT_BORDER);
 
             if(v_t->size() != v_this->size()){
-                std::cerr << "Invalid borders for tiles (" << this->grid_i << ", " << this->grid_j
-                        << ") and (" << merge_tree->grid_i  << ", " << merge_tree->grid_j << "\n";
+                std::cerr << "invalid borders for tiles (" << this->grid_i << ", " << this->grid_j
+                          << ") size: " << v_this->size() 
+                          << " and (" << merge_tree->grid_i  << ", " << merge_tree->grid_j 
+                          << ") size: " << v_t->size()
+                          <<" doing a MERGE_HORIZONTAL_BORDER\n";
                 exit(EX_DATAERR);
             }
         }else{
