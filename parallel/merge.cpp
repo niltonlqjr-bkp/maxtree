@@ -152,8 +152,8 @@ void wait_empty(bag_of_tasks<T> &b, uint64_t num_th);
 void verify_args(int argc, char *argv[]);
 void read_config(char conf_name[], 
                  std::string &out_name, std::string &out_ext,
-                 uint32_t &glines, uint32_t &gcolumns, Tattribute lambda,
-                 uint8_t &pixel_connection, bool colored, uint32_t &num_threads);
+                 uint32_t &glines, uint32_t &gcolumns, Tattribute &lambda,
+                 uint8_t &pixel_connection, bool &colored, uint32_t &num_threads);
 void read_sequential_file(bag_of_tasks<input_tile_task*> &bag, vips::VImage *in, uint32_t glines, uint32_t gcolumns);
 bool inside_rectangle(std::pair<uint32_t, uint32_t> c, std::pair<uint32_t, uint32_t> r);
 std::pair<uint32_t, uint32_t> get_task_index(boundary_tree_task *t);
@@ -199,8 +199,8 @@ void wait_empty(bag_of_tasks<T> &b, uint64_t num_th){
 
 void read_config(char conf_name[], 
                  std::string &out_name, std::string &out_ext,
-                 uint32_t &glines, uint32_t &gcolumns, Tattribute lambda,
-                 uint8_t &pixel_connection, bool colored, uint32_t &num_threads){
+                 uint32_t &glines, uint32_t &gcolumns, Tattribute &lambda,
+                 uint8_t &pixel_connection, bool &colored, uint32_t &num_threads){
     /*
         Reading configuration file
     */
@@ -489,17 +489,18 @@ void worker_merge_local(bag_of_tasks<merge_btrees_task *> &merge_bag, bag_of_tas
 }
 
 
-void worker_update(bag_of_tasks<maxtree_task *> &src, bag_of_tasks<maxtree_task *> &dest, boundary_tree *global_bt){
+void worker_update_filter(bag_of_tasks<maxtree_task *> &src, bag_of_tasks<maxtree_task *> &dest, boundary_tree *global_bt, Tattribute lambda){
     bool got_task;
     maxtree_task *mtt;
     std::string s;
     std::cout << "worker update\n";
-    while(!src.empty()){
+    while(src.is_running()){
+        got_task = src.get_task(mtt);
         s = "updating (" + std::to_string(mtt->mt->grid_i) + "," + std::to_string(mtt->mt->grid_j) + ") \n";
         std::cout << s;
-        got_task = src.get_task(mtt);
         mtt->mt->update_from_boundary_tree(global_bt);
         dest.insert_task(mtt);
+        mtt->mt->filter(lambda, global_bt);
         s = "task of grid (" + std::to_string(mtt->mt->grid_i) + "," + std::to_string(mtt->mt->grid_j) + ") update\n";
         std::cout << s;
     }
@@ -609,7 +610,7 @@ int main(int argc, char *argv[]){
     maxtree_tiles.start();
     for(uint32_t i = 0; i < num_th; i++){
         std::cout << "Creating thread\n";
-        threads_g3.push_back(new std::thread(worker_update, std::ref(maxtree_tiles), std::ref(updated_trees),  btree_final_task->bt));
+        threads_g3.push_back(new std::thread(worker_update_filter, std::ref(maxtree_tiles), std::ref(updated_trees),  btree_final_task->bt, lambda));
     }
     std::cout << "waiting end of update\n";
     wait_empty<maxtree_task*>(maxtree_tiles, num_th);
@@ -620,15 +621,27 @@ int main(int argc, char *argv[]){
     }
     std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>> update done <<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
 
+    // vips::VImage end_img;
+    // end_img.new_from_memory_copy(in->data(), sizof(Tpixel_value), in->width(), in->height(), 1,  VIPS_FORMAT_UCHAR);
+    
+    // std::vector<Tpixel_value> data(in->width()*in->height(), 0);
+    // input_tile_task aux;
     updated_trees.start();
+    maxtree *final_image = new maxtree(in->height(),in->width(),0,0);
+    final_image->get_data()->resize(in->height()*in->width());
     while(!updated_trees.empty()){
         bool got = updated_trees.get_task(mtt);
         if(got){
             std::cout << mtt->mt->grid_i << "," << mtt->mt->grid_j << "\n";
-            mtt->mt->filter(lambda, btree_final_task->bt);
+            // mtt->mt->filter(lambda, btree_final_task->bt);
             std::string name = out_name + "_" + std::to_string(mtt->mt->grid_i) + "-" + std::to_string(mtt->mt->grid_j) + "." + out_ext;
             mtt->mt->save(name);
+            for(int n = 0; n < mtt->mt->get_size(); n++){
+                maxtree_node *pix = mtt->mt->at_pos(n);
+                final_image->set_pixel(pix, pix->global_idx);
+            }
         }
     }
+    final_image->save(out_name+"."+out_ext);
     
 }

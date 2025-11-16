@@ -23,8 +23,8 @@ bool verbose;
 
 void read_config(char conf_name[], 
                  std::string &out_name, std::string &out_ext,
-                 uint32_t &glines, uint32_t &gcolumns, Tattribute lambda,
-                 uint8_t &pixel_connection, bool colored){
+                 uint32_t &glines, uint32_t &gcolumns, Tattribute &lambda,
+                 uint8_t &pixel_connection, bool &colored){
     /*
         Reading configuration file
     */
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
     uint32_t glines, gcolumns;
     uint8_t pixel_connection;
     bool colored;
-    Tattribute lambda=2;
+    Tattribute lambda;
 
     std::cout << "argc: " << argc << " argv:" ;
     for(int i=0;i<argc;i++){
@@ -457,10 +457,10 @@ int main(int argc, char *argv[]){
         std::cout << "real image:\n";
         std::cout << final_image->to_string(GVAL,colored, 5,0);
 
-        std::cout << "labels:\n";
+        std::cout << "labels:...\n";
         std::cout << final_image->to_string(LABEL,colored, 5,0);
     }
-    
+    final_image->save(out_name+"."+out_ext);
 
     //as boundary trees tem alturas e tamanhos distintos, logo é possível estimar o custo de um merge
 

@@ -675,18 +675,22 @@ void boundary_tree::merge_branches(boundary_node *x, boundary_node *y,
 
 maxtree_node *boundary_tree::up_tree_filter(uint64_t gidx, Tattribute lambda){
     boundary_node *glr;
+    maxtree_node *label_lr;
     glr = this->get_bnode_levelroot(gidx);
+    if(glr->ptr_node->labeled){
+        return glr->ptr_node;
+    }
     if(glr->ptr_node->attribute >= lambda){
         glr->ptr_node->set_label(glr->ptr_node->gval);
-        return glr->ptr_node;
+        label_lr = glr->ptr_node;
+    }else if(glr->boundary_parent != NO_BOUNDARY_PARENT){
+        label_lr = this->up_tree_filter(glr->boundary_parent, lambda);
+    }else{ // this case is for boundary tree root.
+        glr->ptr_node->set_label(Tpixel_NULL);
+        label_lr = glr->ptr_node;
     }
-    if(glr->boundary_parent != NO_BOUNDARY_PARENT){
-        return this->up_tree_filter(glr->boundary_parent, lambda);
-    }else{
-        glr->ptr_node->set_label(glr->ptr_node->gval);
-        return glr->ptr_node;
-    }
-
+    glr->ptr_node->set_label(label_lr->label);
+    return label_lr;
 }
 
 

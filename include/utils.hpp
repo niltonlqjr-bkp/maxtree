@@ -27,7 +27,7 @@
 #define	COLOR_WHITE   "\033[0;37m"	
 #define COLOR_RESET   "\033[0m"
 
-const std::string COLORS[] = {COLOR_BLACK,
+const std::string COLORS[] = {COLOR_WHITE,
                               COLOR_RED,
                               COLOR_GREEN,
                               COLOR_YELLOW,

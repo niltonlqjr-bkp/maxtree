@@ -518,15 +518,19 @@ maxtree_node *maxtree::up_tree_filter(maxtree_node *n, Tattribute lambda, bounda
     maxtree_node *llr, *llr_last, *llr_par, *label_lr;
     boundary_node *glr;
     llr = this->get_levelroot(n);
+    if(llr->labeled){
+        return llr;
+    }
     if(llr->attribute >= lambda){
         llr->set_label(llr->gval);
-        return llr;
+        label_lr =  llr;
     }else if(llr->parent != NO_PARENT){
         llr_par = this->get_levelroot(llr->parent);
         label_lr = this->up_tree_filter(llr_par, lambda, bt); 
     }else{
         label_lr = bt->up_tree_filter(llr->global_idx, lambda);
     }
+    llr->set_label(label_lr->label);
     return label_lr;
 }
 
@@ -538,8 +542,9 @@ void maxtree::filter(Tattribute lambda, boundary_tree *bt){
     
     for(auto node: *(this->data)){
         label_lr = this->up_tree_filter(node, lambda, bt);
-        node->set_label(label_lr->gval);
+        node->set_label(label_lr->label);
     }
+    std::cout << "\n";
 }
 
 

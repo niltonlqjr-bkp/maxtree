@@ -19,7 +19,7 @@ glines=8
 gcolumns=8
 
 #atribute value to filter
-lambda=15
+lambda=30
 
 output = saidas/output_8L8C
 
