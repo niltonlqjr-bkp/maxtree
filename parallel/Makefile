@@ -54,6 +54,8 @@ output_verbose = ${output_text_dir}/verbose_${l}l${c}c.txt
 
 figures_flags ?= 
 
+
+
 all: ${dest_merge} 
 
 
@@ -113,10 +115,11 @@ tasks.o: ${tasks_dir}/tasks.cpp ${tasks_dir}/tasks.hpp
 	g++ ${OBJ_CPP_FLAGS} ${tasks_dir}/tasks.cpp -I${tasks_dir} -I${maxtree_dir} ${vips_args} -o ${tasks_dir}/tasks.o
 
 base: 
-	@make -C ${maxtree_node_dir}
-	@make -C ${maxtree_dir}
-	@make -C ${boundary_tree_dir}
-	@make -C ${utils_dir}
+	export TYPE=${TYPE}
+	@make -C ${maxtree_node_dir} 
+	@make -C ${maxtree_dir} 
+	@make -C ${boundary_tree_dir} 
+	@make -C ${utils_dir}  
 
 test: merge
 	@mkdir -p ${output_text_dir} 
