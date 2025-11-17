@@ -637,12 +637,12 @@ int main(int argc, char *argv[]){
             // mtt->mt->filter(lambda, btree_final_task->bt);
             std::string name = out_name + "_" + std::to_string(mtt->mt->grid_i) + "-" + std::to_string(mtt->mt->grid_j) + "." + out_ext;
             mtt->mt->save(name);
-            for(int n = 0; n < mtt->mt->get_size(); n++){
-                maxtree_node *pix = mtt->mt->at_pos(n);
-                final_image->set_pixel(pix, pix->global_idx);
-            }
+            // for(int n = 0; n < mtt->mt->get_size(); n++){
+            //     maxtree_node *pix = mtt->mt->at_pos(n);
+            //     final_image->set_pixel(pix, pix->global_idx);
+            // }
         }
     }
-    final_image->save(out_name+"."+out_ext);
+    // final_image->save(out_name+"."+out_ext);
     
 }

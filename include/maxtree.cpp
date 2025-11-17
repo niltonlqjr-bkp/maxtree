@@ -544,7 +544,7 @@ void maxtree::filter(Tattribute lambda, boundary_tree *bt){
         label_lr = this->up_tree_filter(node, lambda, bt);
         node->set_label(label_lr->label);
     }
-    std::cout << "\n";
+    // std::cout << "\n";
 }
 
 
