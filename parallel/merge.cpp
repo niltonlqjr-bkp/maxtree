@@ -198,9 +198,9 @@ void wait_empty(bag_of_tasks<T> &b, uint64_t num_th){
 
 
 void read_config(char conf_name[], 
-                 std::string &out_name, std::string &out_ext,
-                 uint32_t &glines, uint32_t &gcolumns, Tattribute &lambda,
-                 uint8_t &pixel_connection, bool &colored, uint32_t &num_threads){
+                 std::string &out_name, std::string &out_ext, uint32_t &glines, uint32_t &gcolumns, 
+                 Tattribute &lambda, uint8_t &pixel_connection, bool &colored, uint32_t &num_threads,
+                bool &join_image){
     /*
         Reading configuration file
     */
@@ -259,6 +259,13 @@ void read_config(char conf_name[],
         num_threads = std::stoi(configs->at("threads"));
     }
     
+    join_image = false;
+    if(configs->find("join_image") != configs->end()){
+        if(configs->at("join_image") == "true"){
+            join_image = true;
+        }
+    }
+
 
     std::cout << "configurations:\n";
     print_unordered_map(configs);
@@ -515,7 +522,7 @@ int main(int argc, char *argv[]){
     uint8_t pixel_connection;
     uint32_t num_th;
     bool colored;
-    
+    bool join_image;
     Tattribute lambda=2;
     maxtree *t;
     input_tile_task *tile;
@@ -528,7 +535,7 @@ int main(int argc, char *argv[]){
     std::vector<std::thread*> threads_g1, threads_g2, threads_g3, threads_g4;
 
     verify_args(argc, argv);
-    read_config(argv[2], out_name, out_ext, glines, gcolumns, lambda, pixel_connection, colored, num_th);
+    read_config(argv[2], out_name, out_ext, glines, gcolumns, lambda, pixel_connection, colored, num_th, join_image);
 
     GRID_DIMS = std::make_pair(glines,gcolumns);
 
@@ -637,12 +644,15 @@ int main(int argc, char *argv[]){
             // mtt->mt->filter(lambda, btree_final_task->bt);
             std::string name = out_name + "_" + std::to_string(mtt->mt->grid_i) + "-" + std::to_string(mtt->mt->grid_j) + "." + out_ext;
             mtt->mt->save(name);
-            // for(int n = 0; n < mtt->mt->get_size(); n++){
-            //     maxtree_node *pix = mtt->mt->at_pos(n);
-            //     final_image->set_pixel(pix, pix->global_idx);
-            // }
+            if(join_image){
+                for(int n = 0; n < mtt->mt->get_size(); n++){
+                    maxtree_node *pix = mtt->mt->at_pos(n);
+                    final_image->set_pixel(pix, pix->global_idx);
+                }
+            }
         }
     }
-    // final_image->save(out_name+"."+out_ext);
-    
+    if(join_image){
+        final_image->save(out_name+"."+out_ext);
+    }
 }

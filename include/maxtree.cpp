@@ -139,6 +139,69 @@ std::vector<maxtree_node *> *maxtree::get_levelroots(){
     return this->levelroots;
 }
 
+
+void maxtree::fill_from_VImage(vips::VImage &img_in, uint32_t global_nlines, uint32_t global_ncols){
+    this->h = img_in.height();
+    this->w = img_in.width();
+    vips::VImage img = img_in.copy_memory();
+    auto img_pels = img.get_image();
+    
+    char aux_enum_c[][50] = {"VIPS_FORMAT_UCHAR", "VIPS_FORMAT_CHAR", "VIPS_FORMAT_USHORT", "VIPS_FORMAT_SHORT", 
+         "VIPS_FORMAT_UINT", " VIPS_FORMAT_INT", " VIPS_FORMAT_FLOAT", " VIPS_FORMAT_COMPLEX", " VIPS_FORMAT_DOUBLE", 
+         "VIPS_FORMAT_DPCOMPLEX", "VIPS_FORMAT_LAST"};
+    if(verbose){
+        std::cout << "pixel format: ";
+        if (img_pels->BandFmt > 0){
+            std::cout << aux_enum_c[img_pels->BandFmt];
+        }else {
+            std::cout << "VIPS_FORMAT_NOTSET";
+        }
+        std::cout << "\n";
+    }
+    
+    for(int l = 0; l < this->h; l++){
+        for(int c = 0; c < this->w; c++){
+            int x = this->index_of(l, c);
+            VipsPel *vpel = VIPS_IMAGE_ADDR(img_pels, c, l);
+            this->data->push_back(new maxtree_node((*vpel), x));
+        }
+    }
+}
+
+
+void maxtree::fill_from_VRegion(vips::VRegion &reg_in, uint32_t base_h, uint32_t base_w, 
+                                uint32_t l_tiles, uint32_t c_tiles){
+    VipsRegion *c_region = reg_in.get_region();
+    uint64_t global_idx;
+    Tattribute attr_ini;
+    this->h = vips_region_height(c_region);
+    this->w = vips_region_width(c_region);
+    
+    
+    for(int l = 0; l < this->h; l++){
+        for(int c = 0; c < this->w; c++){
+/*             if(verbose)
+                std::cout << "accessing:" << "(" << l << ", " << c << ")\n"; */
+            int x = this->index_of(l, c);
+            //VipsPel *vpel__ = VIPS_IMAGE_ADDR(c_region, c, l);
+            global_idx = ((base_h+l) * c_tiles) + (c+base_w);
+/*             if(verbose)
+                std::cout << "local:(" << l << ", " << c << ") Global:(" << l+base_h << ", "<< c+base_w << ")\n"; */
+            VipsPel *vpel = VIPS_REGION_ADDR(c_region, c+base_w, l+base_h);
+            /* check if it is a border pixel, so this attr should not be computed */
+            if((this->tile_borders->at(LEFT_BORDER)  && c == 0)           ||
+              (this->tile_borders->at(RIGHT_BORDER)  && c == this->w - 1) ||
+              (this->tile_borders->at(TOP_BORDER)    && l == 0)           ||
+              (this->tile_borders->at(BOTTOM_BORDER) && l == this->h - 1)){
+                attr_ini = Tattr_NULL;
+            }else{
+                attr_ini = Tattr_default;
+            }
+            this->data->push_back(new maxtree_node((*vpel), x, global_idx, attr_ini));
+        }
+    }
+} 
+
 void maxtree::compute_sequential_iterative(){
     std::priority_queue<maxtree_node*, std::vector<maxtree_node*> , cmp_maxtree_nodes> pixel_pq;
     std::stack<maxtree_node*> pixel_stack;
@@ -313,34 +376,6 @@ void maxtree::compute_sequential_recursive(int gl){
 
 }
 
-void maxtree::fill_from_VImage(vips::VImage &img_in, uint32_t global_nlines, uint32_t global_ncols){
-    this->h = img_in.height();
-    this->w = img_in.width();
-    vips::VImage img = img_in.copy_memory();
-    auto img_pels = img.get_image();
-    
-    char aux_enum_c[][50] = {"VIPS_FORMAT_UCHAR", "VIPS_FORMAT_CHAR", "VIPS_FORMAT_USHORT", "VIPS_FORMAT_SHORT", 
-         "VIPS_FORMAT_UINT", " VIPS_FORMAT_INT", " VIPS_FORMAT_FLOAT", " VIPS_FORMAT_COMPLEX", " VIPS_FORMAT_DOUBLE", 
-         "VIPS_FORMAT_DPCOMPLEX", "VIPS_FORMAT_LAST"};
-    if(verbose){
-        std::cout << "pixel format: ";
-        if (img_pels->BandFmt > 0){
-            std::cout << aux_enum_c[img_pels->BandFmt];
-        }else {
-            std::cout << "VIPS_FORMAT_NOTSET";
-        }
-        std::cout << "\n";
-    }
-    
-    for(int l = 0; l < this->h; l++){
-        for(int c = 0; c < this->w; c++){
-            int x = this->index_of(l, c);
-            VipsPel *vpel = VIPS_IMAGE_ADDR(img_pels, c, l);
-            this->data->push_back(new maxtree_node((*vpel), x));
-        }
-    }
-}
-
 maxtree_node *maxtree::get_levelroot(maxtree_node *n){
     maxtree_node *n_parent;
     if(n->parent != NO_PARENT){
@@ -513,7 +548,7 @@ void maxtree::filter(Tattribute lambda){
     }
 }
 
-
+/* 
 maxtree_node *maxtree::up_tree_filter(maxtree_node *n, Tattribute lambda, boundary_tree *bt){
     maxtree_node *llr, *llr_last, *llr_par, *label_lr;
     boundary_node *glr;
@@ -533,6 +568,30 @@ maxtree_node *maxtree::up_tree_filter(maxtree_node *n, Tattribute lambda, bounda
     llr->set_label(label_lr->label);
     return label_lr;
 }
+*/
+    
+maxtree_node *maxtree::up_tree_filter(maxtree_node *n, Tattribute lambda, boundary_tree *bt){
+    maxtree_node *llr, *llr_last, *llr_par, *label_lr;
+    boundary_node *glr;
+    llr = this->get_levelroot(n);
+    if(llr->labeled){
+        return llr;
+    }
+    if(llr->attribute >= lambda){
+        llr->set_label(llr->gval);
+        label_lr =  llr;
+    }else{
+        glr = bt->get_bnode_levelroot(llr->global_parent);
+        if(glr!=NULL){
+            label_lr = bt->up_tree_filter(glr->ptr_node->global_idx, lambda);
+        }else{
+            llr_par = this->get_levelroot(llr->parent);
+            label_lr = this->up_tree_filter(llr_par, lambda, bt); 
+        }
+    }
+    llr->set_label(label_lr->label);
+    return label_lr;
+}
 
 void maxtree::filter(Tattribute lambda, boundary_tree *bt){
     std::vector<maxtree_node *> llr_stack;
@@ -548,38 +607,7 @@ void maxtree::filter(Tattribute lambda, boundary_tree *bt){
 }
 
 
-void maxtree::fill_from_VRegion(vips::VRegion &reg_in, uint32_t base_h, uint32_t base_w, 
-                                uint32_t l_tiles, uint32_t c_tiles){
-    VipsRegion *c_region = reg_in.get_region();
-    uint64_t global_idx;
-    Tattribute attr_ini;
-    this->h = vips_region_height(c_region);
-    this->w = vips_region_width(c_region);
-    
-    
-    for(int l = 0; l < this->h; l++){
-        for(int c = 0; c < this->w; c++){
-/*             if(verbose)
-                std::cout << "accessing:" << "(" << l << ", " << c << ")\n"; */
-            int x = this->index_of(l, c);
-            //VipsPel *vpel__ = VIPS_IMAGE_ADDR(c_region, c, l);
-            global_idx = ((base_h+l) * c_tiles) + (c+base_w);
-/*             if(verbose)
-                std::cout << "local:(" << l << ", " << c << ") Global:(" << l+base_h << ", "<< c+base_w << ")\n"; */
-            VipsPel *vpel = VIPS_REGION_ADDR(c_region, c+base_w, l+base_h);
-            /* check if it is a border pixel, so this attr should not be computed */
-            if((this->tile_borders->at(LEFT_BORDER)  && c == 0)           ||
-              (this->tile_borders->at(RIGHT_BORDER)  && c == this->w - 1) ||
-              (this->tile_borders->at(TOP_BORDER)    && l == 0)           ||
-              (this->tile_borders->at(BOTTOM_BORDER) && l == this->h - 1)){
-                attr_ini = Tattr_NULL;
-            }else{
-                attr_ini = Tattr_default;
-            }
-            this->data->push_back(new maxtree_node((*vpel), x, global_idx, attr_ini));
-        }
-    }
-} 
+
 //this code is to "divide" strategy that performed pooly (very worst than sequential)
 
 /* 
@@ -616,6 +644,91 @@ void maxtree::insert_component(std::vector<int> comp, int64_t parent, Tpixel_val
 }
 
  */
+
+std::string maxtree::string_borders(){
+    std::string ret="";
+    if(this->tile_borders->at(LEFT_BORDER)) ret+="Left ";
+    if(this->tile_borders->at(TOP_BORDER)) ret+="Top ";
+    if(this->tile_borders->at(RIGHT_BORDER)) ret+="Rigth ";
+    if(this->tile_borders->at(BOTTOM_BORDER)) ret+="Bottom ";
+    if(ret == "") ret+="No Borders";
+    return ret;
+}
+
+/* 
+std::vector<component> maxtree::components_at(Tpixel_value threshold){
+    return this->components[threshold];
+}
+std::vector<Tpixel_value> maxtree::all_thresholds(){
+    std::vector<Tpixel_value> ret;
+    for(auto t: this->components){
+        ret.push_back(t.first);
+    }
+    return ret;
+}
+ */
+std::vector<maxtree_node*> maxtree::get_neighbours(uint64_t pixel, uint8_t con){
+    std::vector<maxtree_node*> v;
+    int64_t idx, pl, pc;
+    std::tie(pl, pc) = this->lin_col(pixel);
+    if(con == 4 || con == 8){
+        if(pl >= 1){
+            idx = index_of(pl-1, pc);
+            v.push_back(this->data->at(idx));
+        }
+        if(pl < (uint64_t)h - 1){
+            idx = index_of(pl+1, pc);
+            v.push_back(this->data->at(idx));
+        }
+        if(pc >= 1){
+            idx = index_of(pl, pc-1);
+            v.push_back(this->data->at(idx));
+        }
+        if(pc < (uint64_t)w - 1){
+            idx = index_of(pl, pc+1);
+            v.push_back(this->data->at(idx));
+        }
+    }
+    if(con == 8){
+        if(pl >= 1 && pc >=1){
+            idx = index_of(pl-1, pc-1);
+            v.push_back(this->data->at(idx));
+        }
+        if(pl < (uint64_t)h - 1 && pc < (uint64_t)w - 1){
+            idx = index_of(pl+1, pc+1);
+            v.push_back(this->data->at(idx));
+        }
+        if(pc >= 1 && pl < (uint64_t)h - 1){
+            idx = index_of(pl+1, pc-1);
+            v.push_back(this->data->at(idx));
+        }
+        if(pc < (uint64_t)w - 1 && pl >= 1){
+            idx = index_of(pl-1, pc+1);
+            v.push_back(this->data->at(idx));
+        }
+    }
+    return v;
+}
+
+void maxtree::save(std::string name, enum maxtee_node_field f){
+    
+    std::vector<uint8_t> data;
+    if(f == LABEL){
+        for(uint64_t i=0; i < this->get_size(); i++){
+            data.push_back((uint8_t) this->at_pos(i)->label);
+        }
+    }else if(f == GVAL){
+        for(uint64_t i=0; i < this->get_size(); i++){
+            data.push_back((uint8_t)this->at_pos(i)->gval);
+        }
+    }
+    vips::VImage out = vips::VImage::new_from_memory(data.data(), this->w * this->h * sizeof(uint8_t), this->w, this->h, 1, VIPS_FORMAT_UCHAR);
+
+    out.write_to_file(name.c_str());
+    
+}
+
+
 std::string maxtree::to_string(enum maxtee_node_field field, bool colored, uint8_t spaces, uint8_t decimal ){
     std::string r;
     //a lot of ifs with same for code inside to avoid branches inside for
@@ -724,88 +837,4 @@ std::string maxtree::to_string(enum maxtee_node_field field, bool colored, uint8
     if(colored)
         r+=terminal_color_string(RESET);
     return r;
-}
-
-
-std::string maxtree::string_borders(){
-    std::string ret="";
-    if(this->tile_borders->at(LEFT_BORDER)) ret+="Left ";
-    if(this->tile_borders->at(TOP_BORDER)) ret+="Top ";
-    if(this->tile_borders->at(RIGHT_BORDER)) ret+="Rigth ";
-    if(this->tile_borders->at(BOTTOM_BORDER)) ret+="Bottom ";
-    if(ret == "") ret+="No Borders";
-    return ret;
-}
-
-/* 
-std::vector<component> maxtree::components_at(Tpixel_value threshold){
-    return this->components[threshold];
-}
-std::vector<Tpixel_value> maxtree::all_thresholds(){
-    std::vector<Tpixel_value> ret;
-    for(auto t: this->components){
-        ret.push_back(t.first);
-    }
-    return ret;
-}
- */
-std::vector<maxtree_node*> maxtree::get_neighbours(uint64_t pixel, uint8_t con){
-    std::vector<maxtree_node*> v;
-    int64_t idx, pl, pc;
-    std::tie(pl, pc) = this->lin_col(pixel);
-    if(con == 4 || con == 8){
-        if(pl >= 1){
-            idx = index_of(pl-1, pc);
-            v.push_back(this->data->at(idx));
-        }
-        if(pl < (uint64_t)h - 1){
-            idx = index_of(pl+1, pc);
-            v.push_back(this->data->at(idx));
-        }
-        if(pc >= 1){
-            idx = index_of(pl, pc-1);
-            v.push_back(this->data->at(idx));
-        }
-        if(pc < (uint64_t)w - 1){
-            idx = index_of(pl, pc+1);
-            v.push_back(this->data->at(idx));
-        }
-    }
-    if(con == 8){
-        if(pl >= 1 && pc >=1){
-            idx = index_of(pl-1, pc-1);
-            v.push_back(this->data->at(idx));
-        }
-        if(pl < (uint64_t)h - 1 && pc < (uint64_t)w - 1){
-            idx = index_of(pl+1, pc+1);
-            v.push_back(this->data->at(idx));
-        }
-        if(pc >= 1 && pl < (uint64_t)h - 1){
-            idx = index_of(pl+1, pc-1);
-            v.push_back(this->data->at(idx));
-        }
-        if(pc < (uint64_t)w - 1 && pl >= 1){
-            idx = index_of(pl-1, pc+1);
-            v.push_back(this->data->at(idx));
-        }
-    }
-    return v;
-}
-
-void maxtree::save(std::string name, enum maxtee_node_field f){
-    
-    std::vector<uint8_t> data;
-    if(f == LABEL){
-        for(uint64_t i=0; i < this->get_size(); i++){
-            data.push_back((uint8_t) this->at_pos(i)->label);
-        }
-    }else if(f == GVAL){
-        for(uint64_t i=0; i < this->get_size(); i++){
-            data.push_back((uint8_t)this->at_pos(i)->gval);
-        }
-    }
-    vips::VImage out = vips::VImage::new_from_memory(data.data(), this->w * this->h * sizeof(uint8_t), this->w, this->h, 1, VIPS_FORMAT_UCHAR);
-
-    out.write_to_file(name.c_str());
-    
 }

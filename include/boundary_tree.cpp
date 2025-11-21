@@ -18,7 +18,7 @@ boundary_node::boundary_node(maxtree_node *n, boundary_tree *bound_tree_ptr,
                              int64_t bound_parent, int64_t border_lr){
     // this->gval = n->gval;
     // this->maxtree_idx = n->idx;
-    this->origin = origin;
+    // this->origin = origin;
     this->bound_tree_ptr = bound_tree_ptr;
     this->boundary_parent = bound_parent;
     // this->attr = n->attribute;

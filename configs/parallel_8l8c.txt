@@ -7,7 +7,7 @@
 # main server 
 server=10.1.1.2
 # number of threads for the process 
-threads=6
+threads=9
 # grid lines
 glines=8
 # grid columns
@@ -29,3 +29,6 @@ output=../output/parallel/8l8c/lambda_100000
 
 #output extension (only the libvips extensions)
 output_ext=png
+
+#generate the full image joining the tiles
+join_image=true
